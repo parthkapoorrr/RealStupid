@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -59,7 +60,7 @@ export default function VoteButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 hover:text-primary', { 'text-primary': vote === 'up' })}
+        className={cn('h-auto p-1 text-foreground/80 hover:text-primary hover:bg-accent/20', { 'text-primary': vote === 'up' })}
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
@@ -72,7 +73,7 @@ export default function VoteButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 hover:text-search-ring', { 'text-search-ring': vote === 'down' })}
+        className={cn('h-auto p-1 text-foreground/80 hover:text-search-ring hover:bg-search-ring/20', { 'text-search-ring': vote === 'down' })}
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
