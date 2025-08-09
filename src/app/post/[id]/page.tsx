@@ -1,0 +1,68 @@
+import PostCard from '@/components/PostCard';
+import CommentSection from '@/components/CommentSection';
+import { mockPosts, mockComments } from '@/data/mock-data';
+import type { Post, Comment } from '@/lib/types';
+import { notFound } from 'next/navigation';
+import VoteButtons from '@/components/VoteButtons';
+import { MessageSquare, Link as LinkIcon } from 'lucide-react';
+import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+
+export default function PostPage({ params }: { params: { id: string } }) {
+  const post: Post | undefined = mockPosts.find((p) => p.id === params.id);
+  const comments: Comment[] = mockComments[params.id] || [];
+
+  if (!post) {
+    notFound();
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <Card className="flex bg-card p-4 rounded-lg">
+        <VoteButtons
+          upvotes={post.upvotes}
+          downvotes={post.downvotes}
+          direction="col"
+        />
+        <div className="ml-4 flex-1">
+          <div className="text-xs text-muted-foreground">
+            <Link
+              href={`/c/${post.community}`}
+              className="font-bold text-foreground hover:underline"
+            >
+              c/{post.community}
+            </Link>
+            <span className="mx-1">•</span>
+            <span>Posted by u/{post.author.name}</span>
+            <span className="mx-1">•</span>
+            <span>{post.createdAt}</span>
+          </div>
+          <h1 className="text-2xl font-bold font-headline my-2 text-foreground">
+            {post.title}
+          </h1>
+          {post.content && (
+            <div className="text-base text-foreground/90 prose prose-invert max-w-none">
+              <p>{post.content}</p>
+            </div>
+          )}
+          {post.link && (
+             <a href={post.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-2 mt-4">
+                <span>{post.link}</span>
+                <LinkIcon className="h-4 w-4" />
+            </a>
+          )}
+          <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <MessageSquare className="h-4 w-4" />
+              <span>{post.commentsCount} Comments</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <div className="mt-8">
+        <CommentSection postId={post.id} initialComments={comments} />
+      </div>
+    </div>
+  );
+}
