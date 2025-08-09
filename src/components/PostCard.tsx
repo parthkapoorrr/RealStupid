@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { MessageSquare, Link as LinkIcon } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { Card } from '@/components/ui/card';
@@ -9,6 +10,8 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  const isImagePost = post.link && /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link);
+
   return (
     <Card className="flex bg-card p-2 rounded-lg hover:border-primary/50 transition-colors duration-200">
       <VoteButtons
@@ -16,7 +19,7 @@ export default function PostCard({ post }: PostCardProps) {
         downvotes={post.downvotes}
         direction="col"
       />
-      <div className="ml-4 flex-1">
+      <div className="ml-4 flex-1 overflow-hidden">
         <div className="text-xs text-muted-foreground">
           <Link
             href={`/c/${post.community}`}
@@ -34,18 +37,26 @@ export default function PostCard({ post }: PostCardProps) {
                 {post.title}
             </h3>
         </Link>
-        {post.content && (
+        
+        {isImagePost ? (
+            <Link href={`/post/${post.id}`} className="block mt-2">
+                <div className="relative h-80 overflow-hidden rounded-md">
+                    <Image src={post.link!} alt={post.title} fill className="object-cover" data-ai-hint="cat rock" />
+                </div>
+            </Link>
+        ) : post.content && (
             <div className="text-sm text-foreground/90 max-h-40 overflow-hidden relative">
                 <p>{post.content}</p>
                  <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-card to-transparent" />
             </div>
         )}
+        
         <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
           <Link href={`/post/${post.id}`} className="flex items-center gap-1 hover:text-primary">
             <MessageSquare className="h-4 w-4" />
             <span>{post.commentsCount} Comments</span>
           </Link>
-          {post.link && (
+          {post.link && !isImagePost && (
             <a href={post.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary text-primary">
               <LinkIcon className="h-4 w-4" />
               <span>{new URL(post.link).hostname}</span>

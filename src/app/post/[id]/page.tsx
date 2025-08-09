@@ -1,4 +1,3 @@
-import PostCard from '@/components/PostCard';
 import CommentSection from '@/components/CommentSection';
 import { mockPosts, mockComments } from '@/data/mock-data';
 import type { Post, Comment } from '@/lib/types';
@@ -6,7 +5,8 @@ import { notFound } from 'next/navigation';
 import VoteButtons from '@/components/VoteButtons';
 import { MessageSquare, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import Image from 'next/image';
 
 export default function PostPage({ params }: { params: { id: string } }) {
   const post: Post | undefined = mockPosts.find((p) => p.id === params.id);
@@ -15,6 +15,8 @@ export default function PostPage({ params }: { params: { id: string } }) {
   if (!post) {
     notFound();
   }
+
+  const isImagePost = post.link && /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -40,17 +42,24 @@ export default function PostPage({ params }: { params: { id: string } }) {
           <h1 className="text-2xl font-bold font-headline my-2 text-foreground">
             {post.title}
           </h1>
+          
           {post.content && (
             <div className="text-base text-foreground/90 prose prose-invert max-w-none">
               <p>{post.content}</p>
             </div>
           )}
-          {post.link && (
+
+          {isImagePost ? (
+            <div className="my-4">
+              <Image src={post.link!} alt={post.title} width={800} height={600} className="rounded-md w-full h-auto" data-ai-hint="cat rock" />
+            </div>
+          ) : post.link && (
              <a href={post.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-2 mt-4">
                 <span>{post.link}</span>
                 <LinkIcon className="h-4 w-4" />
             </a>
           )}
+
           <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <MessageSquare className="h-4 w-4" />
