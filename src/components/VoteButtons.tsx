@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
@@ -46,22 +45,22 @@ export default function VoteButtons({
     >
       <Button
         variant="ghost"
-        size="icon"
-        className={cn('h-8 w-8', vote === 'up' ? 'text-primary' : 'text-foreground/80 hover:text-primary')}
+        size="sm"
+        className={cn('font-bold', vote === 'up' ? 'text-primary' : 'text-foreground/80 hover:text-primary')}
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
-        <ArrowUp className={cn(vote === 'up' ? 'fill-current' : '')} />
+        real
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
       <Button
         variant="ghost"
-        size="icon"
-        className={cn('h-8 w-8', vote === 'down' ? 'text-destructive' : 'text-foreground/80 hover:text-destructive')}
+        size="sm"
+        className={cn('font-bold', vote === 'down' ? 'text-search-ring' : 'text-foreground/80 hover:text-search-ring')}
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
-        <ArrowDown className={cn(vote === 'down' ? 'fill-current' : '')} />
+        stupid
       </Button>
     </div>
   );
