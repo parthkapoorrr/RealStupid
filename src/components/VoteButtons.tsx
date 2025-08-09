@@ -3,7 +3,19 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+
+const UpArrow = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
+        <path d="M12 4l8 8h-6v8h-4v-8H4l8-8z" />
+    </svg>
+);
+
+const DownArrow = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
+        <path d="M12 20l-8-8h6V4h4v8h6l-8 8z" />
+    </svg>
+);
+
 
 interface VoteButtonsProps {
   upvotes: number;
@@ -53,7 +65,7 @@ export default function VoteButtons({
       >
         <div className="flex flex-col items-center">
             <span className="text-xs font-thin -mb-1">real</span>
-            <ArrowUp className={cn('h-5 w-5', { 'fill-primary': vote === 'up' })} />
+            <UpArrow className={cn('h-6 w-6', vote === 'up' ? 'text-primary' : 'text-foreground/60')} />
         </div>
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
@@ -65,7 +77,7 @@ export default function VoteButtons({
         aria-label="Downvote"
       >
         <div className="flex flex-col items-center">
-            <ArrowDown className={cn('h-5 w-5', { 'fill-search-ring': vote === 'down' })} />
+            <DownArrow className={cn('h-6 w-6', vote === 'down' ? 'text-search-ring' : 'text-foreground/60')} />
             <span className="text-xs font-thin -mt-1">stupid</span>
         </div>
       </Button>
