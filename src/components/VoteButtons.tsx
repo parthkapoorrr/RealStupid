@@ -65,8 +65,8 @@ export default function VoteButtons({
         aria-label="Upvote"
       >
         <div className="flex flex-col items-center p-1 group-hover:bg-primary/10 rounded-sm">
-            <span className="text-xs font-thin -mb-1 group-hover:text-primary">real</span>
-            <UpArrow className={cn('w-9 h-9', vote === 'up' ? 'text-primary' : 'text-foreground/60')} />
+            <span className={cn("text-xs font-thin -mb-1", { "group-hover:text-primary/80": vote !== 'up', "text-primary": vote === 'up' })}>real</span>
+            <UpArrow className={cn('w-9 h-9 text-foreground/60', {'text-primary': vote === 'up'}, 'group-hover:text-primary/80')} />
         </div>
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
@@ -78,8 +78,8 @@ export default function VoteButtons({
         aria-label="Downvote"
       >
         <div className="flex flex-col items-center p-1 group-hover:bg-search-ring/10 rounded-sm">
-            <DownArrow className={cn('w-9 h-9', vote === 'down' ? 'text-search-ring' : 'text-foreground/60')} />
-            <span className="text-xs font-thin -mt-1 group-hover:text-search-ring">stupid</span>
+            <DownArrow className={cn('w-9 h-9 text-foreground/60', {'text-search-ring': vote === 'down'}, 'group-hover:text-search-ring/80')} />
+            <span className={cn("text-xs font-thin -mt-1", { "group-hover:text-search-ring/80": vote !== 'down', "text-search-ring": vote === 'down' })}>stupid</span>
         </div>
       </Button>
     </div>
