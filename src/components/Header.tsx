@@ -28,12 +28,12 @@ export default function Header() {
         <Menubar className="border-none bg-transparent">
           <MenubarMenu>
             <MenubarTrigger asChild className="cursor-pointer">
-                <Link href="/" className="text-primary hover:text-primary/90 font-semibold">real</Link>
+                <Link href="/" className="text-primary hover:text-primary/90 font-semibold">Real</Link>
             </MenubarTrigger>
           </MenubarMenu>
           <MenubarMenu>
              <MenubarTrigger asChild className="cursor-pointer">
-                <Link href="/stupid" className="text-search-ring hover:text-search-ring/90 font-semibold">stupid</Link>
+                <Link href="/stupid" className="text-search-ring hover:text-search-ring/90 font-semibold">Stupid</Link>
             </MenubarTrigger>
           </MenubarMenu>
         </Menubar>
