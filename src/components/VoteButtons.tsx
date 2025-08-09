@@ -65,7 +65,7 @@ export default function VoteButtons({
         aria-label="Upvote"
       >
         <div className="flex flex-col items-center">
-            <span className="text-[0.5rem] font-thin -mb-1">real</span>
+            <span className="text-xs font-thin -mb-1">real</span>
             <div className="p-1 group-hover:bg-primary/10 rounded-sm">
                 <UpArrow className={cn('h-9 w-9', vote === 'up' ? 'text-primary' : 'text-foreground/60')} />
             </div>
@@ -83,7 +83,7 @@ export default function VoteButtons({
              <div className="p-1 group-hover:bg-search-ring/10 rounded-sm">
                 <DownArrow className={cn('h-9 w-9', vote === 'down' ? 'text-search-ring' : 'text-foreground/60')} />
             </div>
-            <span className="text-[0.5rem] font-thin -mt-1">stupid</span>
+            <span className="text-xs font-thin -mt-1">stupid</span>
         </div>
       </Button>
     </div>
