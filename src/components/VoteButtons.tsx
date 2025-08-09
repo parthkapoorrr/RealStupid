@@ -60,26 +60,26 @@ export default function VoteButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 hover:text-primary hover:bg-accent/20', { 'text-primary': vote === 'up' })}
+        className={cn('h-auto p-1 text-foreground/80 hover:bg-primary/10', { 'text-primary': vote === 'up' })}
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
         <div className="flex flex-col items-center">
-            <span className="text-xs font-thin -mb-1">real</span>
-            <UpArrow className={cn('h-6 w-6', vote === 'up' ? 'text-primary' : 'text-foreground/60')} />
+            <span className="text-[0.6rem] font-thin -mb-1">real</span>
+            <UpArrow className={cn('h-8 w-8', vote === 'up' ? 'text-primary' : 'text-foreground/60')} />
         </div>
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 hover:text-search-ring hover:bg-search-ring/20', { 'text-search-ring': vote === 'down' })}
+        className={cn('h-auto p-1 text-foreground/80 hover:bg-search-ring/10', { 'text-search-ring': vote === 'down' })}
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
         <div className="flex flex-col items-center">
-            <DownArrow className={cn('h-6 w-6', vote === 'down' ? 'text-search-ring' : 'text-foreground/60')} />
-            <span className="text-xs font-thin -mt-1">stupid</span>
+            <DownArrow className={cn('h-8 w-8', vote === 'down' ? 'text-search-ring' : 'text-foreground/60')} />
+            <span className="text-[0.6rem] font-thin -mt-1">stupid</span>
         </div>
       </Button>
     </div>
