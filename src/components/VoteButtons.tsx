@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface VoteButtonsProps {
   upvotes: number;
@@ -39,28 +40,34 @@ export default function VoteButtons({
   return (
     <div
       className={cn(
-        'flex items-center gap-1 bg-card-foreground/5 rounded-md p-1',
+        'flex items-center gap-1',
         direction === 'col' ? 'flex-col' : 'flex-row'
       )}
     >
       <Button
         variant="ghost"
         size="sm"
-        className={cn('font-bold', vote === 'up' ? 'text-primary' : 'text-foreground/80 hover:text-primary')}
+        className={cn('h-auto p-1', vote === 'up' ? 'text-primary' : 'text-foreground/80 hover:text-primary')}
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
-        real
+        <div className="flex flex-col items-center">
+            <span className="text-xs font-thin -mb-1">real</span>
+            <ArrowUp className="h-5 w-5" />
+        </div>
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
       <Button
         variant="ghost"
         size="sm"
-        className={cn('font-bold', vote === 'down' ? 'text-search-ring' : 'text-foreground/80 hover:text-search-ring')}
+        className={cn('h-auto p-1', vote === 'down' ? 'text-search-ring' : 'text-foreground/80 hover:text-search-ring')}
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
-        stupid
+        <div className="flex flex-col items-center">
+            <ArrowDown className="h-5 w-5" />
+            <span className="text-xs font-thin -mt-1">stupid</span>
+        </div>
       </Button>
     </div>
   );
