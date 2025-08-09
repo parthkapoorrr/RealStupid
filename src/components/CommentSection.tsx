@@ -25,7 +25,7 @@ export default function CommentSection({
   postId,
   initialComments,
 }: CommentSectionProps) {
-  const { user } = useAuth();
+  const { effectiveUser } = useAuth();
   const [comments, setComments] = useState<CommentType[]>(initialComments);
   
   const form = useForm<z.infer<typeof commentSchema>>({
@@ -34,14 +34,14 @@ export default function CommentSection({
   });
 
   const onSubmit = (data: z.infer<typeof commentSchema>) => {
-    if (!user) return;
+    if (!effectiveUser) return;
 
     const newComment: CommentType = {
       id: `c-${Date.now()}`,
       postId,
       author: {
-        name: user.displayName || 'Anonymous',
-        avatarUrl: user.photoURL || undefined,
+        name: effectiveUser.displayName || 'Anonymous',
+        avatarUrl: effectiveUser.photoURL || undefined,
       },
       content: data.content,
       createdAt: 'Just now',
@@ -56,9 +56,9 @@ export default function CommentSection({
     <div className="space-y-6">
       <Card>
         <CardContent className="p-4">
-          {user ? (
+          {effectiveUser ? (
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <p className="text-sm">Comment as <span className="font-semibold text-primary">{user.displayName}</span></p>
+              <p className="text-sm">Comment as <span className="font-semibold text-primary">{effectiveUser.displayName}</span></p>
               <Textarea
                 {...form.register('content')}
                 placeholder="What are your thoughts?"

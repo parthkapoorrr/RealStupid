@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/menubar";
 
 export default function Header() {
-  const { user, loading, signInWithGoogle } = useAuth();
+  const { effectiveUser, loading, signInWithGoogle } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,8 +54,8 @@ export default function Header() {
             </Button>
             {loading ? (
                 <Skeleton className="h-9 w-20" />
-            ) : user ? (
-              <UserNav user={user} />
+            ) : effectiveUser ? (
+              <UserNav user={effectiveUser} />
             ) : (
               <Button onClick={signInWithGoogle}>Login</Button>
             )}

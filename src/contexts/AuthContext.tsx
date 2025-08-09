@@ -10,9 +10,17 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import type { User } from '@/lib/types';
+import { usePathname } from 'next/navigation';
+
+interface StupidUser extends User {
+  isStupid: true;
+}
 
 interface AuthContextType {
   user: User | null;
+  stupidUser: StupidUser | null;
+  mode: 'real' | 'stupid';
+  effectiveUser: User | StupidUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
@@ -24,15 +32,32 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [stupidUser, setStupidUser] = useState<StupidUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
+  const mode = pathname.startsWith('/stupid') ? 'stupid' : 'real';
+  const effectiveUser = mode === 'stupid' ? stupidUser : user;
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         const { uid, displayName, email, photoURL } = firebaseUser;
-        setUser({ uid, displayName, email, photoURL });
+        const realUser = { uid, displayName, email, photoURL };
+        setUser(realUser);
+
+        const randomId = Math.floor(1000 + Math.random() * 9000);
+        const stupidName = `StupidUser${randomId}`;
+        setStupidUser({
+            ...realUser,
+            displayName: stupidName,
+            photoURL: `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${stupidName}`,
+            isStupid: true,
+        });
+
       } else {
         setUser(null);
+        setStupidUser(null);
       }
       setLoading(false);
     });
@@ -59,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signInWithGoogle, signOutUser }}
+      value={{ user, stupidUser, mode, effectiveUser, loading, signInWithGoogle, signOutUser }}
     >
       {children}
     </AuthContext.Provider>

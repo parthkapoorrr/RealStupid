@@ -13,20 +13,23 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import type { User } from '@/lib/types';
-import { LogOut, User as UserIcon } from 'lucide-react';
+import { LogOut, User as UserIcon, ShieldQuestion } from 'lucide-react';
 
 interface UserNavProps {
   user: User;
 }
 
 export function UserNav({ user }: UserNavProps) {
-  const { signOutUser } = useAuth();
+  const { signOutUser, mode, stupidUser } = useAuth();
 
   const getInitials = (name: string | null) => {
     if (!name) return 'U';
+    if (name.startsWith('StupidUser')) return 'SU';
     const names = name.split(' ');
     return names.map((n) => n[0]).join('').substring(0,2).toUpperCase();
   };
+  
+  const isStupidMode = mode === 'stupid' && stupidUser;
 
   return (
     <DropdownMenu>
@@ -48,7 +51,7 @@ export function UserNav({ user }: UserNavProps) {
               {user.displayName}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              { isStupidMode ? "You are in Stupid Mode" : user.email }
             </p>
           </div>
         </DropdownMenuLabel>
@@ -58,6 +61,12 @@ export function UserNav({ user }: UserNavProps) {
             <UserIcon className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </DropdownMenuItem>
+           {isStupidMode && (
+            <DropdownMenuItem disabled>
+              <ShieldQuestion className="mr-2 h-4 w-4 text-search-ring" />
+              <span className="text-search-ring">Anonymous</span>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOutUser}>

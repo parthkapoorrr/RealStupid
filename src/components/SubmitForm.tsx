@@ -31,7 +31,7 @@ const formSchema = z.object({
 
 export default function SubmitForm() {
   const { toast } = useToast();
-  const { user, loading } = useAuth();
+  const { effectiveUser, loading } = useAuth();
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
@@ -86,7 +86,7 @@ export default function SubmitForm() {
     return <div>Loading...</div>
   }
 
-  if (!user) {
+  if (!effectiveUser) {
     return (
         <Card>
             <CardHeader>
