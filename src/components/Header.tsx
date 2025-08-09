@@ -24,7 +24,7 @@ export default function Header() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
-              className="pl-9 placeholder:text-search-ring focus-visible:ring-search-ring"
+              className="pl-9 border-search-ring placeholder:text-search-ring focus-visible:ring-search-ring"
             />
           </div>
           <nav className="flex items-center space-x-2">
