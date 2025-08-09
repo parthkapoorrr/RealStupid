@@ -7,13 +7,13 @@ import { cn } from '@/lib/utils';
 
 const UpArrow = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
-        <path d="M12 4l8 8h-6v8h-4v-8H4l8-8z" />
+        <path d="M12 2l10 10h-7v10h-6V12H2L12 2z" />
     </svg>
 );
 
 const DownArrow = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
-        <path d="M12 20l-8-8h6V4h4v8h6l-8 8z" />
+        <path d="M12 22L2 12h7V2h6v10h7L12 22z" />
     </svg>
 );
 
@@ -60,26 +60,30 @@ export default function VoteButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 hover:bg-primary/10', { 'text-primary': vote === 'up' })}
+        className={cn('h-auto p-1 text-foreground/80 hover:bg-primary/10 group', { 'text-primary': vote === 'up' })}
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
         <div className="flex flex-col items-center">
-            <span className="text-[0.6rem] font-thin -mb-1">real</span>
-            <UpArrow className={cn('h-8 w-8', vote === 'up' ? 'text-primary' : 'text-foreground/60')} />
+            <span className="text-[0.5rem] font-thin -mb-1">real</span>
+            <div className="p-1 group-hover:bg-primary/10 rounded-sm">
+                <UpArrow className={cn('h-9 w-9', vote === 'up' ? 'text-primary' : 'text-foreground/60')} />
+            </div>
         </div>
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 hover:bg-search-ring/10', { 'text-search-ring': vote === 'down' })}
+        className={cn('h-auto p-1 text-foreground/80 hover:bg-search-ring/10 group', { 'text-search-ring': vote === 'down' })}
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
         <div className="flex flex-col items-center">
-            <DownArrow className={cn('h-8 w-8', vote === 'down' ? 'text-search-ring' : 'text-foreground/60')} />
-            <span className="text-[0.6rem] font-thin -mt-1">stupid</span>
+             <div className="p-1 group-hover:bg-search-ring/10 rounded-sm">
+                <DownArrow className={cn('h-9 w-9', vote === 'down' ? 'text-search-ring' : 'text-foreground/60')} />
+            </div>
+            <span className="text-[0.5rem] font-thin -mt-1">stupid</span>
         </div>
       </Button>
     </div>
