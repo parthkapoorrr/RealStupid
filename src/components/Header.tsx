@@ -22,7 +22,10 @@ export default function Header() {
         <div className="flex flex-1 items-center justify-end space-x-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search..." className="pl-9" />
+            <Input
+              placeholder="Search..."
+              className="pl-9 placeholder:text-search-ring focus-visible:ring-search-ring"
+            />
           </div>
           <nav className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" className="relative">
