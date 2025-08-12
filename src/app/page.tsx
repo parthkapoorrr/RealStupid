@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Feed</h1>
+        <h1 className="text-3xl font-bold font-headline text-primary">Real Feed</h1>
         <Button asChild>
           <Link href="/submit">Create Post</Link>
         </Button>
