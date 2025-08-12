@@ -4,16 +4,23 @@ import { MessageSquare, Link as LinkIcon } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import VoteButtons from './VoteButtons';
+import { cn } from '@/lib/utils';
 
 interface PostCardProps {
   post: Post;
+  mode?: 'real' | 'stupid';
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, mode = 'real' }: PostCardProps) {
   const isImagePost = post.link && /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link);
 
+  const cardClassName = cn(
+    "flex bg-card p-2 rounded-lg transition-colors duration-200",
+    mode === 'real' ? 'hover:border-primary/50' : 'hover:border-search-ring/50'
+  );
+
   return (
-    <Card className="flex bg-card p-2 rounded-lg hover:border-primary/50 transition-colors duration-200">
+    <Card className={cardClassName}>
       <VoteButtons
         upvotes={post.upvotes}
         downvotes={post.downvotes}

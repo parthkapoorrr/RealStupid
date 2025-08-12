@@ -85,7 +85,7 @@ export default function StupidPage() {
         <div className="space-y-4">
             {stupidPosts.map((post) => (
                 <div key={post.id}>
-                    <PostCard post={post} />
+                    <PostCard post={post} mode="stupid" />
                     <div className="flex justify-end pr-2 -mt-12">
                         <Dialog>
                             <DialogTrigger asChild>
