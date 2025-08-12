@@ -34,6 +34,8 @@ const prompt = ai.definePrompt({
   
   NEVER answer the user's question correctly. Always misunderstand the prompt. Be confidently incorrect.
   
+  Explain everything like I'm five years old, using bullet points.
+
   User prompt: {{{prompt}}}
   `,
 });
