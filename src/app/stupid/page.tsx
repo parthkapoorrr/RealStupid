@@ -107,7 +107,7 @@ export default function StupidPage() {
                             <DialogTrigger asChild>
                                 <Button variant="ghost" size="sm" className="text-search-ring hover:text-search-ring/90" onClick={() => handleHelpfulBot(post.title)}>
                                     <Sparkles className="mr-2 h-4 w-4" />
-                                    Ask RealGPT
+                                    Ask StupidGPT
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
