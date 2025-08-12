@@ -64,7 +64,7 @@ export default function StupidPage() {
     setIsHelpfulLoading(true);
     setHelpfulAnswer('');
     try {
-        const response = await askHelpfulBot({ prompt: question });
+        const response = await askStupidBot({ prompt: question });
         setHelpfulAnswer(response.reply);
     } catch (error) {
         console.error('Error getting helpful answer', error);
@@ -100,7 +100,7 @@ export default function StupidPage() {
                                     <Avatar className="h-8 w-8 bg-primary/20 border border-primary">
                                         <AvatarFallback className="bg-transparent"><Bot className="h-5 w-5 text-primary" /></AvatarFallback>
                                     </Avatar>
-                                    RealGPT's Answer
+                                    StupidGPT's Answer
                                 </DialogTitle>
                                 <DialogDescription className="pt-4">
                                     <p className="font-semibold text-foreground">{post.title}</p>
