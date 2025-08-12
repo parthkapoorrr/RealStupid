@@ -97,6 +97,9 @@ export default function StupidPage() {
     <div className="space-y-6">
         <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold font-headline text-search-ring">Stupid Feed</h1>
+            <Button asChild>
+                <Link href="/submit">Create Post</Link>
+            </Button>
         </div>
         <div className="space-y-4">
             {stupidPosts.map((post) => (
