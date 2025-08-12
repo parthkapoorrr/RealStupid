@@ -9,9 +9,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { UserNav } from './UserNav';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
+import { Button as MovingBorderButton } from '@/components/ui/moving-border';
+
 
 export default function Header() {
   const { effectiveUser, loading, signInWithGoogle, mode } = useAuth();
+
+  const borderClassName = mode === 'real' 
+    ? "bg-[radial-gradient(var(--primary)_40%,transparent_60%)]" 
+    : "bg-[radial-gradient(var(--search-ring)_40%,transparent_60%)]";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,16 +34,21 @@ export default function Header() {
         
         <div className="flex-1 flex justify-center px-4">
             <div className="relative w-full max-w-md">
+              <MovingBorderButton
+                as="div"
+                containerClassName="h-10 w-full"
+                borderRadius="0.5rem"
+                borderClassName={borderClassName}
+                className="p-0 bg-transparent"
+              >
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                placeholder="Search..."
-                className={cn(
-                  'pl-9 placeholder:text-muted-foreground',
-                  mode === 'real'
-                    ? 'focus-visible:ring-primary'
-                    : 'focus-visible:ring-search-ring'
-                )}
+                  placeholder="Search..."
+                  className={cn(
+                    'pl-9 placeholder:text-muted-foreground h-full w-full bg-background border-none focus-visible:ring-0 focus-visible:ring-offset-0',
+                  )}
                 />
+              </MovingBorderButton>
             </div>
         </div>
 
