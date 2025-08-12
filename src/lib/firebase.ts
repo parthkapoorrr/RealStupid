@@ -1,3 +1,4 @@
+
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 
@@ -10,17 +11,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Initialize Firebase
 let app: FirebaseApp;
-let auth: Auth;
-
-if (typeof window !== 'undefined') {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  auth = getAuth(app);
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
 } else {
-  // Provide dummy instances for server-side rendering
-  app = null as any;
-  auth = null as any;
+  app = getApp();
 }
 
+const auth: Auth = getAuth(app);
 
 export { app, auth };
