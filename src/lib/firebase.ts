@@ -12,14 +12,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase for client-side
-let app: FirebaseApp;
-if (typeof window !== 'undefined') {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-} else {
-    // A bit of a hack to avoid server-side errors
-    app = {} as FirebaseApp;
-}
-
-const auth: Auth = typeof window !== 'undefined' ? getAuth(app) : ({} as Auth);
+const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const auth: Auth = getAuth(app);
 
 export { app, auth };
