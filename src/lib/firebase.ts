@@ -11,14 +11,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Initialize Firebase for client-side
 let app: FirebaseApp;
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
+if (typeof window !== 'undefined') {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 } else {
-  app = getApp();
+    // A bit of a hack to avoid server-side errors
+    app = {} as FirebaseApp;
 }
 
-const auth: Auth = getAuth(app);
+const auth: Auth = typeof window !== 'undefined' ? getAuth(app) : ({} as Auth);
 
 export { app, auth };
