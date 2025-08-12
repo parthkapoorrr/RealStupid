@@ -8,11 +8,6 @@ import Logo from './icons/Logo';
 import { useAuth } from '@/hooks/useAuth';
 import { UserNav } from './UserNav';
 import { Skeleton } from './ui/skeleton';
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
 
 export default function Header() {
   const { effectiveUser, loading, signInWithGoogle } = useAuth();
@@ -30,19 +25,6 @@ export default function Header() {
           </span>
         </div>
         
-        <Menubar className="border-none bg-transparent">
-          <MenubarMenu>
-            <MenubarTrigger asChild className="cursor-pointer">
-                <Link href="/" className="text-primary hover:text-primary/90 font-semibold">Real</Link>
-            </MenubarTrigger>
-          </MenubarMenu>
-          <MenubarMenu>
-             <MenubarTrigger asChild className="cursor-pointer">
-                <Link href="/stupid" className="text-search-ring hover:text-search-ring/90 font-semibold">Stupid</Link>
-            </MenubarTrigger>
-          </MenubarMenu>
-        </Menubar>
-
         <div className="flex flex-1 items-center justify-end space-x-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
