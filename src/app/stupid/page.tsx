@@ -97,84 +97,6 @@ export default function StupidPage() {
     <div className="space-y-6">
         <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold font-headline text-search-ring">Stupid Feed</h1>
-             <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen}>
-                <CollapsibleTrigger asChild>
-                    <Button variant="outline" className="border-search-ring text-search-ring hover:bg-search-ring/10 hover:text-search-ring">
-                        <MessageSquarePlus className="mr-2 h-4 w-4" />
-                        {isChatOpen ? 'Close Chat' : 'Ask stupidGPT'}
-                    </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent asChild>
-                    <div className="fixed bottom-0 right-0 w-full max-w-md z-50">
-                        <div className="flex flex-col h-[60vh] bg-background border-l border-t border-border rounded-tl-lg">
-                            <CardHeader className="text-center p-4">
-                                <CardTitle className="text-xl font-bold font-headline text-search-ring">stupidGPT</CardTitle>
-                            </CardHeader>
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                {messages.length === 0 && (
-                                    <div className="text-center text-muted-foreground text-sm">Ask me anything. I'll try my best to be stupid.</div>
-                                )}
-                                {messages.map((message, index) => (
-                                <div
-                                    key={index}
-                                    className={cn('flex items-start gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}
-                                >
-                                    {message.role === 'bot' && (
-                                    <Avatar className="h-8 w-8 bg-search-ring/20 border border-search-ring">
-                                        <AvatarFallback className="bg-transparent"><Bot className="h-5 w-5 text-search-ring" /></AvatarFallback>
-                                    </Avatar>
-                                    )}
-                                    <div
-                                    className={cn(
-                                        'rounded-lg p-3 max-w-xs text-sm',
-                                        message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-card'
-                                    )}
-                                    >
-                                     <p>{message.content}</p>
-                                    </div>
-                                    {message.role === 'user' && (
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
-                                    </Avatar>
-                                    )}
-                                </div>
-                                ))}
-                                {isLoading && (
-                                    <div className="flex items-start gap-4 justify-start">
-                                        <Avatar className="h-8 w-8 bg-search-ring/20 border border-search-ring">
-                                            <AvatarFallback className="bg-transparent"><Bot className="h-5 w-5 text-search-ring" /></AvatarFallback>
-                                        </Avatar>
-                                        <div className="rounded-lg p-3 max-w-sm bg-card flex items-center">
-                                            <Loader2 className="h-5 w-5 animate-spin text-search-ring" />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="p-4 border-t">
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center gap-4">
-                                <Textarea
-                                    {...form.register('prompt')}
-                                    placeholder="Ask the stupid bot..."
-                                    className="flex-1 resize-none text-sm"
-                                    rows={1}
-                                    onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        form.handleSubmit(onSubmit)();
-                                    }
-                                    }}
-                                />
-                                <Button type="submit" disabled={isLoading} size="icon" className="bg-search-ring hover:bg-search-ring/90">
-                                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                                    }
-                                </Button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </CollapsibleContent>
-            </Collapsible>
         </div>
         <div className="space-y-4">
             {stupidPosts.map((post) => (
@@ -183,7 +105,7 @@ export default function StupidPage() {
                     <div className="flex justify-end pr-2 -mt-12">
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/90" onClick={() => handleHelpfulBot(post.title)}>
+                                <Button variant="ghost" size="sm" className="text-search-ring hover:text-search-ring/90" onClick={() => handleHelpfulBot(post.title)}>
                                     <Sparkles className="mr-2 h-4 w-4" />
                                     Ask RealGPT
                                 </Button>
