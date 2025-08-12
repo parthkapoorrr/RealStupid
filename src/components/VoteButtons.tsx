@@ -64,9 +64,9 @@ export default function VoteButtons({
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
-        <div className="flex flex-col items-center p-1 border border-transparent group-hover:border-white/20 rounded-sm">
+        <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">
             <span className={cn("text-xs font-thin -mb-1", { "text-primary": vote === 'up' })}>real</span>
-            <UpArrow className={cn('w-9 h-9 text-foreground/60 group-hover:text-primary/80', {'text-primary': vote === 'up'})} />
+            <UpArrow className={cn('w-9 h-9 text-foreground/60', {'text-primary': vote === 'up'})} />
         </div>
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
@@ -77,8 +77,8 @@ export default function VoteButtons({
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
-        <div className="flex flex-col items-center p-1 border border-transparent group-hover:border-white/20 rounded-sm">
-            <DownArrow className={cn('w-9 h-9 text-foreground/60 group-hover:text-destructive/80', {'text-destructive': vote === 'down'})} />
+        <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">
+            <DownArrow className={cn('w-9 h-9 text-foreground/60', {'text-destructive': vote === 'down'})} />
             <span className={cn("text-xs font-thin -mt-1", { "text-destructive": vote === 'down' })}>stupid</span>
         </div>
       </Button>
