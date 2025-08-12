@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -39,13 +40,13 @@ export default function Header() {
                 containerClassName="h-10 w-full"
                 borderRadius="0.5rem"
                 borderClassName={borderClassName}
-                className="p-0 bg-transparent"
+                className="p-0 bg-transparent items-center flex"
               >
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
                   className={cn(
-                    'pl-9 placeholder:text-muted-foreground h-full w-full bg-background border-none focus-visible:ring-0 focus-visible:ring-offset-0',
+                    'pl-9 placeholder:text-muted-foreground h-full w-full bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0',
                   )}
                 />
               </MovingBorderButton>
