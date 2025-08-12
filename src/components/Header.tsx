@@ -8,9 +8,10 @@ import Logo from './icons/Logo';
 import { useAuth } from '@/hooks/useAuth';
 import { UserNav } from './UserNav';
 import { Skeleton } from './ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
-  const { effectiveUser, loading, signInWithGoogle } = useAuth();
+  const { effectiveUser, loading, signInWithGoogle, mode } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -30,7 +31,12 @@ export default function Header() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                 placeholder="Search..."
-                className="pl-9 placeholder:text-muted-foreground focus-visible:ring-search-ring"
+                className={cn(
+                  'pl-9 placeholder:text-muted-foreground',
+                  mode === 'real'
+                    ? 'focus-visible:ring-primary'
+                    : 'focus-visible:ring-search-ring'
+                )}
                 />
             </div>
         </div>
