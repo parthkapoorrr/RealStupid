@@ -60,25 +60,6 @@ export default function StupidPage() {
     defaultValues: { prompt: '' },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    const userMessage: Message = { role: 'user', content: data.prompt };
-    setMessages((prev) => [...prev, userMessage]);
-    form.reset();
-
-    try {
-      const response = await askStupidBot({ prompt: data.prompt });
-      const botMessage: Message = { role: 'bot', content: response.reply };
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Error calling stupid bot:', error);
-      const errorMessage: Message = { role: 'bot', content: "I'm feeling a bit stupid right now, try again later." };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleHelpfulBot = async (question: string) => {
     setIsHelpfulLoading(true);
     setHelpfulAnswer('');
@@ -97,7 +78,7 @@ export default function StupidPage() {
     <div className="space-y-6">
         <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold font-headline text-search-ring">Stupid Feed</h1>
-            <Button asChild>
+            <Button asChild className="bg-search-ring hover:bg-search-ring/90 text-primary-foreground">
                 <Link href="/submit">Create Post</Link>
             </Button>
         </div>
