@@ -22,7 +22,9 @@ export default function Header() {
       <div className="container flex h-16 max-w-screen-2xl items-center">
         <Link href="/" className="mr-4 flex items-center space-x-2">
           <Logo className="h-6 w-6" />
-          <span className="font-bold font-headline text-xl">RealStupid</span>
+          <span className="font-bold font-headline text-xl">
+            <span className="text-primary">Real</span><span className="text-search-ring">Stupid</span>
+          </span>
         </Link>
         
         <Menubar className="border-none bg-transparent">
