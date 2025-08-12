@@ -25,6 +25,7 @@ export default function PostCard({ post, mode = 'real' }: PostCardProps) {
         upvotes={post.upvotes}
         downvotes={post.downvotes}
         direction="col"
+        mode={mode}
       />
       <div className="ml-4 flex-1 overflow-hidden">
         <div className="text-xs text-muted-foreground">

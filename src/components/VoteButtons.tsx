@@ -22,12 +22,14 @@ interface VoteButtonsProps {
   upvotes: number;
   downvotes: number;
   direction?: 'row' | 'col';
+  mode?: 'real' | 'stupid';
 }
 
 export default function VoteButtons({
   upvotes,
   downvotes,
   direction = 'row',
+  mode = 'real',
 }: VoteButtonsProps) {
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const [score, setScore] = useState(upvotes - downvotes);
@@ -50,6 +52,9 @@ export default function VoteButtons({
     }
   };
 
+  const upvoteText = mode === 'real' ? 'real' : 'stupid';
+  const downvoteText = mode === 'real' ? 'stupid' : 'real';
+
   return (
     <div
       className={cn(
@@ -65,7 +70,7 @@ export default function VoteButtons({
         aria-label="Upvote"
       >
         <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">
-            <span className={cn("text-xs font-thin -mb-1", { "text-primary": vote === 'up' })}>stupid</span>
+            <span className={cn("text-xs font-thin -mb-1", { "text-primary": vote === 'up' })}>{upvoteText}</span>
             <UpArrow className={cn('w-9 h-9 text-foreground/60', {'text-primary': vote === 'up'})} />
         </div>
       </Button>
@@ -79,7 +84,7 @@ export default function VoteButtons({
       >
         <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">
             <DownArrow className={cn('w-9 h-9 text-foreground/60', {'text-destructive': vote === 'down'})} />
-            <span className={cn("text-xs font-thin -mt-1", { "text-destructive": vote === 'down' })}>real</span>
+            <span className={cn("text-xs font-thin -mt-1", { "text-destructive": vote === 'down' })}>{downvoteText}</span>
         </div>
       </Button>
     </div>

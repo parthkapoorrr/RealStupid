@@ -9,14 +9,16 @@ import { Card } from '@/components/ui/card';
 import Image from 'next/image';
 
 export default function PostPage({ params }: { params: { id: string } }) {
-  const post: Post | undefined = mockPosts.find((p) => p.id === params.id);
-  const comments: Comment[] = mockComments[params.id] || [];
+  const isStupidPost = params.id.startsWith('stupid-');
+  const post: Post | undefined = mockPosts.find((p) => p.id === params.id || `stupid-${p.id}` === params.id);
+  const comments: Comment[] = mockComments[post?.id.replace('stupid-', '') || ''] || [];
 
   if (!post) {
     notFound();
   }
 
   const isImagePost = post.link && /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link);
+  const mode = isStupidPost ? 'stupid' : 'real';
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -25,6 +27,7 @@ export default function PostPage({ params }: { params: { id: string } }) {
           upvotes={post.upvotes}
           downvotes={post.downvotes}
           direction="col"
+          mode={mode}
         />
         <div className="ml-4 flex-1">
           <div className="text-xs text-muted-foreground">
