@@ -55,6 +55,16 @@ export default function VoteButtons({
   const upvoteText = mode === 'real' ? 'real' : 'stupid';
   const downvoteText = mode === 'real' ? 'stupid' : 'real';
 
+  const upvoteClasses = {
+    'text-primary': mode === 'real' && vote === 'up',
+    'text-search-ring': mode === 'stupid' && vote === 'up',
+  };
+
+  const downvoteClasses = {
+    'text-destructive': mode === 'real' && vote === 'down',
+    'text-primary': mode === 'stupid' && vote === 'down',
+  };
+
   return (
     <div
       className={cn(
@@ -65,26 +75,26 @@ export default function VoteButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 group', { 'text-primary': vote === 'up' })}
+        className={cn('h-auto p-1 text-foreground/80 group', upvoteClasses)}
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
         <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">
-            <span className={cn("text-xs font-thin -mb-1", { "text-primary": vote === 'up' })}>{upvoteText}</span>
-            <UpArrow className={cn('w-9 h-9 text-foreground/60', {'text-primary': vote === 'up'})} />
+            <span className={cn("text-xs font-thin -mb-1", upvoteClasses)}>{upvoteText}</span>
+            <UpArrow className={cn('w-9 h-9 text-foreground/60', upvoteClasses)} />
         </div>
       </Button>
       <span className="text-sm font-bold min-w-[2ch] text-center">{score}</span>
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 group', { 'text-destructive': vote === 'down' })}
+        className={cn('h-auto p-1 text-foreground/80 group', downvoteClasses)}
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
         <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">
-            <DownArrow className={cn('w-9 h-9 text-foreground/60', {'text-destructive': vote === 'down'})} />
-            <span className={cn("text-xs font-thin -mt-1", { "text-destructive": vote === 'down' })}>{downvoteText}</span>
+            <DownArrow className={cn('w-9 h-9 text-foreground/60', downvoteClasses)} />
+            <span className={cn("text-xs font-thin -mt-1", downvoteClasses)}>{downvoteText}</span>
         </div>
       </Button>
     </div>
