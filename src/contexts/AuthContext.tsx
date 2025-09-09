@@ -11,6 +11,9 @@ import {
 import { auth } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 import { usePathname } from 'next/navigation';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 interface StupidUser extends User {
   isStupid: true;
@@ -40,9 +43,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const effectiveUser = mode === 'stupid' ? stupidUser : user;
   
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         const { uid, displayName, email, photoURL } = firebaseUser;
+
+        // Check if user exists in our DB
+        let dbUser = await db.query.users.findFirst({
+            where: eq(users.id, uid),
+        });
+
+        // If not, create them
+        if (!dbUser) {
+            const newUser = {
+                id: uid,
+                displayName: displayName,
+                email: email!,
+                photoURL: photoURL
+            };
+            await db.insert(users).values(newUser);
+            dbUser = { ...newUser, createdAt: new Date()};
+        }
+        
         const realUser = { uid, displayName, email, photoURL };
         setUser(realUser);
 
