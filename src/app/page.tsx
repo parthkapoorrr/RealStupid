@@ -24,7 +24,7 @@ export default function Home() {
 
   if (!effectiveUser) {
     return (
-      <div className="h-[calc(100vh-4rem)] relative w-full overflow-hidden bg-background flex flex-col items-center justify-center">
+      <div className="h-screen relative w-full overflow-hidden bg-background flex flex-col items-center justify-center">
         <div className="absolute inset-0 w-full h-full bg-background z-20 [mask-image:radial-gradient(transparent,white)] pointer-events-none" />
         <Boxes />
         <div className="flex flex-col items-center gap-2 relative z-20">
@@ -34,7 +34,7 @@ export default function Home() {
             </h1>
         </div>
         <p className="text-center mt-2 text-muted-foreground relative z-20">
-          The stupidly simple community platform. Join the conversation.
+          Be Real or Be Stupid. You Choose :)
         </p>
         <Button onClick={signInWithGoogle} className="mt-8 z-20 font-bold text-lg px-8 py-6">
             Login with Google
@@ -46,18 +46,23 @@ export default function Home() {
   const posts: Post[] = mockPosts;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline text-primary">Real Feed</h1>
-        <Button asChild>
-          <Link href="/submit">Create Post</Link>
-        </Button>
+    <>
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold font-headline text-primary">Real Feed</h1>
+            <Button asChild>
+              <Link href="/submit">Create Post</Link>
+            </Button>
+          </div>
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="space-y-4">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
-    </div>
+    </>
   );
 }
