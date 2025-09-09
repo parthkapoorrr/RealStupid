@@ -11,9 +11,8 @@ import {
 import { auth } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 import { usePathname } from 'next/navigation';
-import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { getOrCreateUser } from '@/app/auth/actions';
+
 
 interface StupidUser extends User {
   isStupid: true;
@@ -47,21 +46,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const { uid, displayName, email, photoURL } = firebaseUser;
 
-        // Check if user exists in our DB
-        let dbUser = await db.query.users.findFirst({
-            where: eq(users.id, uid),
-        });
-
-        // If not, create them
-        if (!dbUser) {
-            const newUser = {
-                id: uid,
-                displayName: displayName,
-                email: email!,
-                photoURL: photoURL
-            };
-            await db.insert(users).values(newUser);
-            dbUser = { ...newUser, createdAt: new Date()};
+        try {
+          await getOrCreateUser(uid, displayName, email, photoURL);
+        } catch (error) {
+            console.error("Failed to get or create user", error)
+            // sign out the user if we can't create a DB record
+            await signOutUser();
+            return;
         }
         
         const realUser = { uid, displayName, email, photoURL };
