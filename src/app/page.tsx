@@ -1,3 +1,4 @@
+
 "use client";
 import React from "react";
 import Link from 'next/link';
@@ -25,7 +26,7 @@ export default function Home() {
   if (!effectiveUser) {
     return (
       <div className="h-screen relative w-full overflow-hidden bg-background flex flex-col items-center justify-center">
-        <div className="absolute inset-0 w-full h-full bg-background z-20 [mask-image:radial-gradient(transparent,white)]" />
+        <div className="absolute inset-0 w-full h-full bg-background z-20 [mask-image:radial-gradient(transparent,white)] pointer-events-none" />
         <Boxes />
         <div className="flex flex-col items-center gap-2 relative z-20">
             <Logo className="w-20 h-20 text-primary" />
