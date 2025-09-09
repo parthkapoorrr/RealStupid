@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/moving-border';
+import { Button } from '@/components/ui/button';
 import { Bell, Search } from 'lucide-react';
 import Logo from './icons/Logo';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,16 +13,6 @@ import React from 'react';
 
 export default function Header() {
   const { effectiveUser, loading, signInWithGoogle, mode } = useAuth();
-  const [isClient, setIsClient] = React.useState(false);
-
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const borderClassName =
-    mode === 'stupid'
-      ? 'bg-[radial-gradient(var(--search-ring-fg)_40%,transparent_60%)]'
-      : 'bg-[radial-gradient(var(--primary-fg)_40%,transparent_60%)]';
 
   const ringClassName =
     mode === 'stupid' ? 'focus-visible:ring-search-ring' : 'focus-visible:ring-ring';
@@ -42,36 +32,14 @@ export default function Header() {
         
         <div className="flex-1 flex justify-center px-4">
             <div className="relative w-full max-w-md">
-              {isClient ? (
-                  <Button
-                    as="div"
-                    containerClassName="h-10 w-full"
-                    borderRadius="0.5rem"
-                    borderClassName={borderClassName}
-                    duration={3000}
-                    className="bg-background"
-                  >
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search..."
-                      className={cn(
-                        "pl-9 placeholder:text-muted-foreground bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0",
-                        ringClassName
-                      )}
-                    />
-                  </Button>
-              ) : (
-                <>
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
                     placeholder="Search..."
                     className={cn(
-                      "pl-9 placeholder:text-muted-foreground",
-                      mode === 'stupid' && "focus-visible:ring-search-ring"
+                    "pl-9 placeholder:text-muted-foreground",
+                    ringClassName
                     )}
-                  />
-                </>
-              )}
+                />
             </div>
         </div>
 
