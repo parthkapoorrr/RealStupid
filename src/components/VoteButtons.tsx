@@ -75,7 +75,7 @@ export default function VoteButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 group', upvoteClasses)}
+        className={cn('h-auto p-1 text-foreground/80 hover:bg-transparent', upvoteClasses)}
         onClick={() => handleVote('up')}
         aria-label="Upvote"
       >
@@ -88,7 +88,7 @@ export default function VoteButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn('h-auto p-1 text-foreground/80 group', downvoteClasses)}
+        className={cn('h-auto p-1 text-foreground/80 hover:bg-transparent', downvoteClasses)}
         onClick={() => handleVote('down')}
         aria-label="Downvote"
       >
