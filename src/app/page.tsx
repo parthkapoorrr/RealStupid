@@ -6,6 +6,10 @@ import { cn } from "@/lib/utils";
 import Logo from "@/components/icons/Logo";
 import { Loader2 } from "lucide-react";
 import { WavyBackground } from "@/components/ui/wavy-background";
+import PostCard from "@/components/PostCard";
+import { mockPosts } from "@/data/mock-data";
+import Link from "next/link";
+import Header from "@/components/Header";
 
 export default function Home() {
   const { effectiveUser, loading, signInWithGoogle } = useAuth();
@@ -44,12 +48,22 @@ export default function Home() {
     );
   }
   
-  // This part is now hidden by the landing page, but kept for when the user logs in.
   return (
     <>
+      <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-6">
-          {/* Content for logged-in users would go here, maybe redirect to a different page? */}
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold font-headline text-primary">Real Feed</h1>
+            <Button asChild>
+                <Link href="/submit">Create Post</Link>
+            </Button>
+          </div>
+          <div className="space-y-4">
+              {mockPosts.map((post) => (
+                  <PostCard key={post.id} post={post} mode="real" />
+              ))}
+          </div>
         </div>
       </div>
     </>
