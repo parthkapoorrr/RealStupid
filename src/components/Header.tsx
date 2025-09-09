@@ -1,19 +1,32 @@
-
 'use client';
 
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/moving-border';
 import { Bell, Search } from 'lucide-react';
 import Logo from './icons/Logo';
 import { useAuth } from '@/hooks/useAuth';
 import { UserNav } from './UserNav';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 export default function Header() {
   const { effectiveUser, loading, signInWithGoogle, mode } = useAuth();
+  const [isClient, setIsClient] = React.useState(false);
 
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const borderClassName =
+    mode === 'stupid'
+      ? 'bg-[radial-gradient(var(--search-ring-fg)_40%,transparent_60%)]'
+      : 'bg-[radial-gradient(var(--primary-fg)_40%,transparent_60%)]';
+
+  const ringClassName =
+    mode === 'stupid' ? 'focus-visible:ring-search-ring' : 'focus-visible:ring-ring';
+  
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
@@ -29,14 +42,36 @@ export default function Header() {
         
         <div className="flex-1 flex justify-center px-4">
             <div className="relative w-full max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search..."
-                  className={cn(
-                    "pl-9 placeholder:text-muted-foreground",
-                    mode === 'stupid' && "focus-visible:ring-search-ring"
-                  )}
-                />
+              {isClient ? (
+                  <Button
+                    as="div"
+                    containerClassName="h-10 w-full"
+                    borderRadius="0.5rem"
+                    borderClassName={borderClassName}
+                    duration={3000}
+                    className="bg-background"
+                  >
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search..."
+                      className={cn(
+                        "pl-9 placeholder:text-muted-foreground bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                        ringClassName
+                      )}
+                    />
+                  </Button>
+              ) : (
+                <>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search..."
+                    className={cn(
+                      "pl-9 placeholder:text-muted-foreground",
+                      mode === 'stupid' && "focus-visible:ring-search-ring"
+                    )}
+                  />
+                </>
+              )}
             </div>
         </div>
 
@@ -52,7 +87,7 @@ export default function Header() {
             ) : effectiveUser ? (
               <UserNav user={effectiveUser} />
             ) : (
-              <Button onClick={signInWithGoogle}>Login</Button>
+              <button onClick={signInWithGoogle} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">Login</button>
             )}
           </nav>
         </div>
