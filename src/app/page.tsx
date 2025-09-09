@@ -31,7 +31,7 @@ export default function Home() {
           <h1 className={cn("md:text-5xl text-3xl text-foreground font-headline mt-4")}>
             Welcome to <span className="text-primary">Real</span><span className="text-search-ring">Stupid</span>
           </h1>
-          <p className="mt-4 text-lg font-headline text-foreground/80">
+          <p className="mt-4 text-lg font-headline text-foreground/80 [text-shadow:0_0_12px_hsl(var(--primary))]">
             Everyone has two sides, pick yours :)
           </p>
           <div className="absolute bottom-20">
