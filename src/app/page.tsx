@@ -7,10 +7,10 @@ import { mockPosts } from '@/data/mock-data';
 import type { Post } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useAuth } from "@/hooks/useAuth";
-import { Boxes } from "@/components/ui/background-boxes";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/icons/Logo";
 import { Loader2 } from "lucide-react";
+import { WavyBackground } from "@/components/ui/wavy-background";
 
 export default function Home() {
   const { effectiveUser, loading, signInWithGoogle } = useAuth();
@@ -25,9 +25,13 @@ export default function Home() {
 
   if (!effectiveUser) {
     return (
-      <div className="h-screen relative w-full overflow-hidden bg-background flex flex-col items-center justify-center">
-        <div className="absolute inset-0 w-full h-full bg-background z-20 [mask-image:radial-gradient(transparent,white)] pointer-events-none" />
-        <Boxes />
+      <WavyBackground
+        className="max-w-4xl mx-auto pb-40"
+        colors={["#ff007f", "#00ffff", "#ff00ff", "#33ccff", "#ff33cc"]}
+        waveWidth={30}
+        backgroundFill="hsl(var(--background))"
+        speed="slow"
+      >
         <div className="flex flex-col items-center gap-2 relative z-20">
             <Logo className="w-20 h-20 text-primary" />
             <h1 className={cn("md:text-5xl text-3xl text-foreground relative z-20 font-headline")}>
@@ -40,7 +44,7 @@ export default function Home() {
         <Button onClick={signInWithGoogle} className="mt-8 z-20 font-bold text-lg px-8 py-6 bg-gradient-to-r from-primary to-search-ring text-primary-foreground hover:from-primary/90 hover:to-search-ring/90">
             Login with Google
         </Button>
-      </div>
+      </WavyBackground>
     );
   }
   
