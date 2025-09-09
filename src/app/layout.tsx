@@ -30,8 +30,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased min-h-screen bg-background flex flex-col">
         <AuthProvider>
-          <Header />
-          <main className="flex-1 container mx-auto px-4 py-8">
+          <main className="flex-1">
             {children}
           </main>
           <Toaster />
