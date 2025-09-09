@@ -34,7 +34,7 @@ export default function Home() {
             </h1>
         </div>
         <p className="text-center mt-2 text-muted-foreground relative z-20">
-          Be Real or Be Stupid. You Choose :)
+          Everyone has two sides, pick yours :)
         </p>
         <Button onClick={signInWithGoogle} className="mt-8 z-20 font-bold text-lg px-8 py-6">
             Login with Google
