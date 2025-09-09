@@ -34,10 +34,10 @@ export default function Home() {
                 Welcome to <span className="text-primary">Real</span><span className="text-search-ring">Stupid</span>
             </h1>
         </div>
-        <p className="text-center mt-2 text-muted-foreground relative z-20">
+        <p className="text-center mt-2 text-muted-foreground relative z-20 font-headline">
           Everyone has two sides, pick yours :)
         </p>
-        <Button onClick={signInWithGoogle} className="mt-8 z-20 font-bold text-lg px-8 py-6">
+        <Button onClick={signInWithGoogle} className="mt-8 z-20 font-bold text-lg px-8 py-6 bg-gradient-to-r from-primary to-search-ring text-primary-foreground hover:from-primary/90 hover:to-search-ring/90">
             Login with Google
         </Button>
       </div>
