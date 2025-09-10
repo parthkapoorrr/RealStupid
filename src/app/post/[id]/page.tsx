@@ -1,5 +1,5 @@
 import CommentSection from '@/components/CommentSection';
-import { mockPosts, mockComments } from '@/data/mock-data';
+import { mockComments } from '@/data/mock-data';
 import type { Post, Comment } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import VoteButtons from '@/components/VoteButtons';
@@ -7,15 +7,35 @@ import { MessageSquare, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
+import { getPostById } from '@/app/actions';
 
-export default function PostPage({ params }: { params: { id: string } }) {
+export default async function PostPage({ params }: { params: { id: string } }) {
   const isStupidPost = params.id.startsWith('stupid-');
-  const post: Post | undefined = mockPosts.find((p) => p.id === params.id || `stupid-${p.id}` === params.id);
+  const postId = isStupidPost ? params.id.replace('stupid-', '') : params.id;
+  const postIdNum = parseInt(postId, 10);
+
+  if (isNaN(postIdNum)) {
+    notFound();
+  }
+
+  let post: Post | null = await getPostById(postIdNum) as Post | null;
   const comments: Comment[] = mockComments[post?.id.replace('stupid-', '') || ''] || [];
 
   if (!post) {
     notFound();
   }
+
+  if (isStupidPost) {
+    post = {
+      ...post,
+      id: `stupid-${post.id}`,
+      community: `stupid/${post.community}`,
+      title: `What if ${post.title.toLowerCase()}?`,
+      content: `I was just thinking... ${post.content || ''}`,
+      author: { name: `StupidUser${Math.floor(1000 + Math.random() * 9000)}` },
+    }
+  }
+
 
   const isImagePost = post.link && /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link);
   const mode = isStupidPost ? 'stupid' : 'real';

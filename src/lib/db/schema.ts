@@ -7,6 +7,7 @@ import {
   serial,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import type { z } from 'zod';
 
@@ -39,6 +40,13 @@ export const posts = pgTable('posts', {
   upvotes: integer('upvotes').default(0).notNull(),
   downvotes: integer('downvotes').default(0).notNull(),
 });
+
+export const postsRelations = relations(posts, ({ one }) => ({
+    user: one(users, {
+        fields: [posts.userId],
+        references: [users.id],
+    }),
+}));
 
 export const comments = pgTable('comments', {
   id: serial('id').primaryKey(),

@@ -11,8 +11,8 @@ export interface Post {
   link?: string;
   content?: string;
   author: {
-    name: string;
-    avatarUrl?: string;
+    name: string | null;
+    avatarUrl?: string | null;
   };
   community: string;
   createdAt: string;

@@ -1,11 +1,11 @@
-"use client";
-import React from "react";
 import { Button } from '@/components/ui/button';
 import PostCard from "@/components/PostCard";
-import { mockPosts } from "@/data/mock-data";
 import Link from "next/link";
+import { getPosts } from '../actions';
+import type { Post } from '@/lib/types';
 
-export default function RealPage() {
+export default async function RealPage() {
+  const posts: Post[] = await getPosts() as Post[];
   
   return (
       <div className="space-y-6">
@@ -21,9 +21,13 @@ export default function RealPage() {
           </div>
         </div>
         <div className="space-y-4">
-            {mockPosts.map((post) => (
+            {posts.length > 0 ? (
+              posts.map((post) => (
                 <PostCard key={post.id} post={post} mode="real" />
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground pt-10">No posts yet. Be the first to create one!</p>
+            )}
         </div>
       </div>
   );
