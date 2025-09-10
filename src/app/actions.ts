@@ -3,7 +3,7 @@
 import { db } from '@/lib/db';
 import { insertPostSchema, posts, users } from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 export async function createPost(formData: FormData) {
   const values = {
@@ -38,42 +38,38 @@ export async function createPost(formData: FormData) {
 
 export async function getPosts() {
   try {
-    const allPosts = await db.select({
-      id: posts.id,
-      title: posts.title,
-      content: posts.content,
-      link: posts.link,
-      community: posts.community,
-      createdAt: posts.createdAt,
-      upvotes: posts.upvotes,
-      downvotes: posts.downvotes,
-      author: {
-        name: users.displayName,
-        avatarUrl: users.photoURL
-      },
-      // In a real app, you would calculate this with a subquery or a separate table
-      commentsCount: 0 
-    })
-    .from(posts)
-    .leftJoin(users, (posts.userId, users.id))
-    .orderBy(desc(posts.createdAt));
-    
-    // Drizzle returns a weird nested object, let's flatten it.
-    // This is a known behavior that might be improved in future Drizzle versions.
+    const allPosts = await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        content: posts.content,
+        link: posts.link,
+        community: posts.community,
+        createdAt: posts.createdAt,
+        upvotes: posts.upvotes,
+        downvotes: posts.downvotes,
+        author: {
+          name: users.displayName,
+          avatarUrl: users.photoURL,
+        },
+        // In a real app, you would calculate this with a subquery or a separate table
+        commentsCount: 0,
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.userId, users.id))
+      .orderBy(desc(posts.createdAt));
+
     return allPosts.map(p => ({
-      ...p.posts,
-      author: p.users,
+      ...p,
       // Formatting date for display
-      createdAt: new Date(p.posts.createdAt).toLocaleDateString('en-US', {
+      createdAt: new Date(p.createdAt).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
-        year: 'numeric'
+        year: 'numeric',
       }),
-      commentsCount: p.commentsCount,
       // Ensure id is a string for consistency with mock data and component props
-      id: String(p.posts.id)
+      id: String(p.id),
     }));
-
   } catch (error) {
     console.error('Database error fetching posts:', error);
     return [];
