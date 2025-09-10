@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -39,21 +39,25 @@ type Message = {
   content: string;
 };
 
-const stupidPosts: Post[] = mockPosts.map(post => ({
-    ...post,
-    id: `stupid-${post.id}`,
-    community: `stupid/${post.community}`,
-    title: `What if ${post.title.toLowerCase()}?`,
-    content: `I was just thinking... ${post.content || ''}`,
-    author: { name: `StupidUser${Math.floor(1000 + Math.random() * 9000)}` },
-}));
-
 export default function StupidPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [helpfulAnswer, setHelpfulAnswer] = useState('');
   const [isHelpfulLoading, setIsHelpfulLoading] = useState(false);
+  const [stupidPosts, setStupidPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    const generatedPosts: Post[] = mockPosts.map(post => ({
+        ...post,
+        id: `stupid-${post.id}`,
+        community: `stupid/${post.community}`,
+        title: `What if ${post.title.toLowerCase()}?`,
+        content: `I was just thinking... ${post.content || ''}`,
+        author: { name: `StupidUser${Math.floor(1000 + Math.random() * 9000)}` },
+    }));
+    setStupidPosts(generatedPosts);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
