@@ -106,7 +106,8 @@ export default function SubmitForm() {
         description: 'Your post has been successfully created.',
       });
       form.reset();
-      router.push('/real'); // Redirect to real page
+      // Force a hard reload to ensure the new post is fetched.
+      window.location.href = '/real';
     } catch (error) {
       console.error('Failed to create post', error);
       toast({
