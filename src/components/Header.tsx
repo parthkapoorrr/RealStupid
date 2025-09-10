@@ -49,9 +49,6 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <nav className="flex items-center space-x-2">
-            <Button asChild>
-              <Link href="/">Go Real</Link>
-            </Button>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />

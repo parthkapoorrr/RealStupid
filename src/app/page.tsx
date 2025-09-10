@@ -55,9 +55,14 @@ export default function Home() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold font-headline text-primary">Real Feed</h1>
-            <Button asChild>
-                <Link href="/submit">Create Post</Link>
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button asChild className="bg-search-ring hover:bg-search-ring/90 text-primary-foreground">
+                  <Link href="/stupid">Go Stupid</Link>
+              </Button>
+              <Button asChild>
+                  <Link href="/submit">Create Post</Link>
+              </Button>
+            </div>
           </div>
           <div className="space-y-4">
               {mockPosts.map((post) => (
