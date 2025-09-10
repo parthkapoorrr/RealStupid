@@ -3,7 +3,7 @@
 import { db } from '@/lib/db';
 import { insertPostSchema, posts, users } from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 
 export async function createPost(formData: FormData) {
   const values = {
@@ -118,4 +118,22 @@ export async function getPostById(postId: number) {
     console.error('Database error fetching post by ID:', error);
     return null;
   }
+}
+
+
+export async function updateVote(postId: number, voteType: 'up' | 'down') {
+    try {
+        const fieldToIncrement = voteType === 'up' ? posts.upvotes : posts.downvotes;
+        await db.update(posts)
+            .set({ [voteType === 'up' ? 'upvotes' : 'downvotes']: sql`${fieldToIncrement} + 1` })
+            .where(eq(posts.id, postId));
+
+        revalidatePath('/');
+        revalidatePath('/real');
+        revalidatePath('/stupid');
+        revalidatePath(`/post/[id]`);
+    } catch(error) {
+        console.error("Failed to update vote", error);
+        throw new Error("Could not update vote count.");
+    }
 }

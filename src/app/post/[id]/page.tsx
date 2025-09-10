@@ -44,6 +44,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     <div className="max-w-4xl mx-auto">
       <Card className="flex bg-card p-4 rounded-lg">
         <VoteButtons
+          postId={post.id}
           upvotes={post.upvotes}
           downvotes={post.downvotes}
           direction="col"

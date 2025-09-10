@@ -31,7 +31,8 @@ export default function Comment({ comment }: CommentProps) {
         </div>
         <p className="text-foreground/90">{comment.content}</p>
         <div className="mt-2">
-            <VoteButtons upvotes={comment.upvotes} downvotes={comment.downvotes} />
+            {/* We are not connecting comment votes to DB for this version */}
+            {/* <VoteButtons upvotes={comment.upvotes} downvotes={comment.downvotes} /> */}
         </div>
       </div>
     </Card>

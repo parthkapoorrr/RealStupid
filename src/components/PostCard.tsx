@@ -22,6 +22,7 @@ export default function PostCard({ post, mode = 'real' }: PostCardProps) {
   return (
     <Card className={cardClassName}>
       <VoteButtons
+        postId={post.id}
         upvotes={post.upvotes}
         downvotes={post.downvotes}
         direction="col"

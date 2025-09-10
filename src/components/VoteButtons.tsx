@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useOptimistic, useState } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { updateVote } from '@/app/actions';
 
 const UpArrow = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
@@ -19,6 +20,7 @@ const DownArrow = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
 
 
 interface VoteButtonsProps {
+  postId: string;
   upvotes: number;
   downvotes: number;
   direction?: 'row' | 'col';
@@ -26,29 +28,58 @@ interface VoteButtonsProps {
 }
 
 export default function VoteButtons({
+  postId,
   upvotes,
   downvotes,
   direction = 'row',
   mode = 'real',
 }: VoteButtonsProps) {
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
-  const [score, setScore] = useState(upvotes - downvotes);
 
-  const handleVote = (newVote: 'up' | 'down') => {
+  const [optimisticState, setOptimisticState] = useOptimistic(
+    { upvotes, downvotes },
+    (state, action: { voteType: 'up' | 'down' | 'unvote', previousVote: 'up' | 'down' | null }) => {
+        if (action.voteType === 'up') {
+            return {
+                upvotes: state.upvotes + 1,
+                downvotes: action.previousVote === 'down' ? Math.max(0, state.downvotes -1) : state.downvotes
+            }
+        }
+        if (action.voteType === 'down') {
+            return {
+                upvotes: action.previousVote === 'up' ? Math.max(0, state.upvotes - 1) : state.upvotes,
+                downvotes: state.downvotes + 1,
+            }
+        }
+        if (action.voteType === 'unvote') {
+             return {
+                upvotes: action.previousVote === 'up' ? Math.max(0, state.upvotes - 1) : state.upvotes,
+                downvotes: action.previousVote === 'down' ? Math.max(0, state.downvotes -1) : state.downvotes
+            }
+        }
+
+        return state;
+    }
+  );
+  
+  const score = optimisticState.upvotes - optimisticState.downvotes;
+
+  const handleVote = async (newVote: 'up' | 'down') => {
+    const previousVote = vote;
+    
     if (newVote === vote) {
       // Unvoting
       setVote(null);
-      setScore(score + (newVote === 'up' ? -1 : 1));
+      // We don't call the DB for unvoting in this simple implementation
     } else {
       // New vote or changing vote
-      let scoreChange = 0;
-      if (vote === 'up') scoreChange = -1;
-      if (vote === 'down') scoreChange = 1;
-
-      scoreChange += (newVote === 'up' ? 1 : -1);
-      
-      setScore(score + scoreChange);
       setVote(newVote);
+      setOptimisticState({ voteType: newVote, previousVote });
+      
+      const postIdNum = parseInt(postId.replace('stupid-', ''), 10);
+      if (!isNaN(postIdNum)) {
+        await updateVote(postIdNum, newVote);
+      }
     }
   };
 
