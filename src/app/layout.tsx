@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata: Metadata = {
   title: 'RealStupid',
@@ -34,6 +35,7 @@ export default function RootLayout({
           </main>
           <Toaster />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
