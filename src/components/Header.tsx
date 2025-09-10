@@ -25,11 +25,11 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Link href="/">
+          <Link href="/real">
             <Logo className="h-6 w-6" />
           </Link>
           <span className="font-bold font-headline text-xl">
-            <Link href="/"><span className="text-primary">Real</span></Link>
+            <Link href="/real"><span className="text-primary">Real</span></Link>
             <Link href="/stupid"><span className="text-search-ring">Stupid</span></Link>
           </span>
         </div>

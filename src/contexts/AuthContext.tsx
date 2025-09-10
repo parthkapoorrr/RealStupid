@@ -21,7 +21,7 @@ interface StupidUser extends User {
 interface AuthContextType {
   user: User | null;
   stupidUser: StupidUser | null;
-  mode: 'real' | 'stupid';
+  mode: 'real' | 'stupid' | 'none';
   effectiveUser: User | StupidUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
@@ -32,13 +32,23 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
+function getMode(pathname: string): 'real' | 'stupid' | 'none' {
+    if (pathname.startsWith('/stupid')) {
+        return 'stupid';
+    }
+    if (pathname.startsWith('/real') || pathname === '/') {
+        return 'real';
+    }
+    return 'none';
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [stupidUser, setStupidUser] = useState<StupidUser | null>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
 
-  const mode = pathname.startsWith('/stupid') ? 'stupid' : 'real';
+  const mode = getMode(pathname);
   const effectiveUser = mode === 'stupid' ? stupidUser : user;
   
   useEffect(() => {

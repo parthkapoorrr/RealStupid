@@ -106,7 +106,7 @@ export default function SubmitForm() {
         description: 'Your post has been successfully created.',
       });
       form.reset();
-      router.push('/'); // Redirect to home page
+      router.push('/real'); // Redirect to real page
     } catch (error) {
       console.error('Failed to create post', error);
       toast({

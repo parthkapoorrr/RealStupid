@@ -27,7 +27,7 @@ export async function createPost(formData: FormData) {
 
   try {
     await db.insert(posts).values(validatedPost);
-    revalidatePath('/');
+    revalidatePath('/real');
     revalidatePath('/stupid');
   } catch (error) {
     console.error('Database error:', error);

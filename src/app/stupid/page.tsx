@@ -84,7 +84,7 @@ export default function StupidPage() {
             <h1 className="text-3xl font-bold font-headline text-search-ring">Stupid Feed</h1>
             <div className="flex items-center gap-4">
               <Button asChild>
-                  <Link href="/">Go Real</Link>
+                  <Link href="/real">Go Real</Link>
               </Button>
               <Button asChild className="bg-search-ring hover:bg-search-ring/90 text-primary-foreground">
                   <Link href="/submit">Create Post</Link>
