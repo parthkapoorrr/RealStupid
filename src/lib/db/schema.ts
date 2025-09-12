@@ -50,6 +50,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
         references: [users.id],
     }),
     votes: many(postVotes),
+    comments: many(comments),
 }));
 
 export const voteTypeEnum = pgEnum('vote_type', ['up', 'down']);
@@ -86,11 +87,31 @@ export const comments = pgTable('comments', {
   postId: integer('post_id')
     .notNull()
     .references(() => posts.id),
-  parentId: integer('parent_id'),
+  parentId: integer('parent_id').references((): any => comments.id), // Self-referencing for replies
   createdAt: timestamp('created_at').defaultNow().notNull(),
   upvotes: integer('upvotes').default(0).notNull(),
   downvotes: integer('downvotes').default(0).notNull(),
 });
+
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+    user: one(users, {
+        fields: [comments.userId],
+        references: [users.id],
+    }),
+    post: one(posts, {
+        fields: [comments.postId],
+        references: [posts.id],
+    }),
+    parent: one(comments, {
+        fields: [comments.parentId],
+        references: [comments.id],
+        relationName: 'replies',
+    }),
+    replies: many(comments, {
+        relationName: 'replies',
+    })
+}));
+
 
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
