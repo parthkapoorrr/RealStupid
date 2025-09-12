@@ -21,7 +21,6 @@ export async function createPost(formData: FormData) {
   
   // Create a mutable copy for validation
   const valuesToValidate = { ...rawValues };
-  delete (valuesToValidate as any).image; // a temp solution to remove image from validation
 
   if (imageFile && imageFile.size > 0) {
     console.log('Image received:', imageFile.name, imageFile.size, 'bytes');
