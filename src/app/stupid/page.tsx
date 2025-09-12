@@ -21,7 +21,6 @@ import {
   } from "@/components/ui/dialog"
 import { getPosts } from '../actions';
 import { useAuth } from '@/hooks/useAuth';
-import CreateCommunityDialog from '@/components/CreateCommunityDialog';
 
 const formSchema = z.object({
   prompt: z.string().min(1, 'Please enter a prompt.'),
@@ -100,7 +99,6 @@ export default function StupidPage() {
               <Button asChild>
                   <Link href="/real">Go Real</Link>
               </Button>
-              <CreateCommunityDialog mode="stupid" />
               <Button asChild className="bg-search-ring hover:bg-search-ring/90 text-primary-foreground">
                   <Link href="/stupid/submit">Create Stupid Post</Link>
               </Button>
