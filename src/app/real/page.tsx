@@ -5,6 +5,7 @@ import { getPosts } from '../actions';
 import type { Post } from '@/lib/types';
 import { auth } from '@/lib/firebase';
 import { getOrCreateUser } from '../auth/actions';
+import CreateCommunityDialog from '@/components/CreateCommunityDialog';
 
 export default async function RealPage() {
   // This is a server component, so we can't use the useAuth hook.
@@ -25,6 +26,7 @@ export default async function RealPage() {
             <Button asChild className="bg-search-ring hover:bg-search-ring/90 text-primary-foreground">
                 <Link href="/stupid">Go Stupid</Link>
             </Button>
+            <CreateCommunityDialog mode="real" />
             <Button asChild>
                 <Link href="/submit">Create Post</Link>
             </Button>
