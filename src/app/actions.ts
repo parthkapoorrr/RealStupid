@@ -20,23 +20,17 @@ export async function createPost(formData: FormData) {
 
   const imageFile = formData.get('image') as File | null;
   
+  // Create a mutable copy for validation
+  const valuesToValidate = { ...rawValues };
+
   if (imageFile && imageFile.size > 0) {
     // In a real app, you would upload this to a storage service like Firebase Storage or an S3 bucket.
     // For now, we'll just log that it's here and store a placeholder URL.
     console.log('Image received:', imageFile.name, imageFile.size, 'bytes');
     // Using picsum for a dynamic placeholder. The seed ensures the same image appears for the same post.
     const seed = Math.floor(Math.random() * 1000);
-    rawValues.link = `https://picsum.photos/seed/${seed}/800/600`;
-  }
-
-  // Only include fields that are in the schema for validation
-  const valuesToValidate = {
-    userId: rawValues.userId,
-    title: rawValues.title,
-    community: rawValues.community,
-    content: rawValues.content,
-    link: rawValues.link,
-    mode: rawValues.mode,
+    // IMPORTANT: Update the link in the object that will be validated
+    valuesToValidate.link = `https://picsum.photos/seed/${seed}/800/600`;
   }
 
   const validatedPost = insertPostSchema.parse(valuesToValidate);
