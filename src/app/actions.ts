@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { insertPostSchema, posts, users, postVotes } from '@/lib/db/schema';
+import { insertPostSchema, posts, users, postVotes, comments } from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { auth } from '@/lib/firebase';
@@ -47,6 +47,15 @@ export async function createPost(formData: FormData) {
 
 export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) {
   try {
+     const commentCountSubquery = db
+      .select({
+        postId: comments.postId,
+        count: sql<number>`count(*)`.as('comment_count'),
+      })
+      .from(comments)
+      .groupBy(comments.postId)
+      .as('comment_counts');
+
     const allPosts = await db
       .select({
         id: posts.id,
@@ -58,28 +67,38 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         upvotes: posts.upvotes,
         downvotes: posts.downvotes,
         mode: posts.mode,
-        author: {
-          name: users.displayName,
-          avatarUrl: users.photoURL,
-        },
+        authorName: users.displayName,
+        authorAvatar: users.photoURL,
         userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
-        // In a real app, you would calculate this with a subquery or a separate table
-        commentsCount: 0,
+        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`,
       })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
       .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`))
+      .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
       .where(eq(posts.mode, mode))
       .orderBy(desc(posts.createdAt));
 
     return allPosts.map(p => ({
-      ...p,
+      id: String(p.id),
+      title: p.title,
+      content: p.content || undefined,
+      link: p.link || undefined,
+      community: p.community,
       createdAt: new Date(p.createdAt).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
       }),
-      id: String(p.id),
+      upvotes: p.upvotes,
+      downvotes: p.downvotes,
+      mode: p.mode as 'real' | 'stupid',
+      author: {
+        name: p.authorName || 'Unknown User',
+        avatarUrl: p.authorAvatar,
+      },
+      userVote: p.userVote,
+      commentsCount: Number(p.commentsCount),
     }));
   } catch (error) {
     console.error('Database error fetching posts:', error);
@@ -99,7 +118,7 @@ export async function getPostById(postId: number, userId?: string | null) {
     .leftJoin(users, eq(posts.userId, users.id))
     .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`));
     
-    if (results.length === 0 || !results[0].post || !results[0].user) {
+    if (results.length === 0 || !results[0].post) {
         return null;
     }
 
@@ -112,8 +131,8 @@ export async function getPostById(postId: number, userId?: string | null) {
       content: post.content ?? undefined,
       link: post.link ?? undefined,
       author: {
-        name: user.displayName || 'Unknown User',
-        avatarUrl: user.photoURL || undefined
+        name: user?.displayName || 'Unknown User',
+        avatarUrl: user?.photoURL || undefined
       },
       community: post.community,
       createdAt: new Date(post.createdAt).toLocaleDateString('en-US', {
@@ -125,7 +144,7 @@ export async function getPostById(postId: number, userId?: string | null) {
       downvotes: post.downvotes,
       userVote: userVote,
       commentsCount: 0, // Placeholder
-      mode: post.mode,
+      mode: post.mode as 'real' | 'stupid',
     };
   } catch (error) {
     console.error('Database error fetching post by ID:', error);
