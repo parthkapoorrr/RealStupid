@@ -18,7 +18,7 @@ export const users = pgTable(
   {
     id: varchar('id', { length: 191 }).primaryKey(), // Firebase UID
     displayName: text('display_name'),
-    email: text('email').notNull(),
+    email: text('email').notNull().unique(),
     photoURL: text('photo_url'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
@@ -126,9 +126,7 @@ export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 export type User = z.infer<typeof selectUserSchema>;
 
-export const insertPostSchema = createInsertSchema(posts, {
-  link: schema => schema.link.url().optional().or(schema.link.length(0)),
-});
+export const insertPostSchema = createInsertSchema(posts);
 export const selectPostSchema = createSelectSchema(posts);
 export type Post = z.infer<typeof selectPostSchema>;
 
