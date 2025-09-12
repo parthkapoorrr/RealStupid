@@ -5,6 +5,7 @@ import { getPosts } from '../actions';
 import type { Post } from '@/lib/types';
 import { auth } from '@/lib/firebase';
 import { getOrCreateUser } from '../auth/actions';
+import { Plus } from 'lucide-react';
 
 export default async function RealPage() {
   // This is a server component, so we can't use the useAuth hook.
@@ -26,7 +27,7 @@ export default async function RealPage() {
                 <Link href="/stupid">Go Stupid</Link>
             </Button>
             <Button asChild>
-                <Link href="/submit">Create Post</Link>
+                <Link href="/submit">Create <Plus className="h-4 w-4 -ml-1" /></Link>
             </Button>
           </div>
         </div>
