@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { MessageSquare, Link as LinkIcon } from 'lucide-react';
@@ -25,6 +26,7 @@ export default function PostCard({ post, mode = 'real' }: PostCardProps) {
         postId={post.id}
         upvotes={post.upvotes}
         downvotes={post.downvotes}
+        userVote={post.userVote}
         direction="col"
         mode={mode}
       />

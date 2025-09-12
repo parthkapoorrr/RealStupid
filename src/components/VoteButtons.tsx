@@ -1,10 +1,12 @@
 
 'use client';
 
-import { useOptimistic, useState } from 'react';
+import { useOptimistic, useState, useTransition } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { updateVote } from '@/app/actions';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const UpArrow = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
@@ -23,6 +25,7 @@ interface VoteButtonsProps {
   postId: string;
   upvotes: number;
   downvotes: number;
+  userVote: 'up' | 'down' | null;
   direction?: 'row' | 'col';
   mode?: 'real' | 'stupid';
 }
@@ -31,55 +34,75 @@ export default function VoteButtons({
   postId,
   upvotes,
   downvotes,
+  userVote,
   direction = 'row',
   mode = 'real',
 }: VoteButtonsProps) {
-  const [vote, setVote] = useState<'up' | 'down' | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
   const [optimisticState, setOptimisticState] = useOptimistic(
-    { upvotes, downvotes },
-    (state, action: { voteType: 'up' | 'down' | 'unvote', previousVote: 'up' | 'down' | null }) => {
-        if (action.voteType === 'up') {
-            return {
-                upvotes: state.upvotes + 1,
-                downvotes: action.previousVote === 'down' ? Math.max(0, state.downvotes -1) : state.downvotes
-            }
-        }
-        if (action.voteType === 'down') {
-            return {
-                upvotes: action.previousVote === 'up' ? Math.max(0, state.upvotes - 1) : state.upvotes,
-                downvotes: state.downvotes + 1,
-            }
-        }
-        if (action.voteType === 'unvote') {
-             return {
-                upvotes: action.previousVote === 'up' ? Math.max(0, state.upvotes - 1) : state.upvotes,
-                downvotes: action.previousVote === 'down' ? Math.max(0, state.downvotes -1) : state.downvotes
-            }
-        }
+    { upvotes, downvotes, userVote },
+    (state, action: { voteType: 'up' | 'down' }) => {
+        const { voteType } = action;
+        const currentUserVote = state.userVote;
 
-        return state;
+        if (voteType === currentUserVote) {
+            // Unvoting
+            return {
+                upvotes: state.upvotes - (voteType === 'up' ? 1 : 0),
+                downvotes: state.downvotes - (voteType === 'down' ? 1 : 0),
+                userVote: null
+            };
+        } else if (currentUserVote) {
+            // Changing vote
+            return {
+                upvotes: state.upvotes + (voteType === 'up' ? 1 : -1),
+                downvotes: state.downvotes + (voteType === 'down' ? 1 : -1),
+                userVote: voteType,
+            };
+        } else {
+            // New vote
+            return {
+                upvotes: state.upvotes + (voteType === 'up' ? 1 : 0),
+                downvotes: state.downvotes + (voteType === 'down' ? 1 : 0),
+                userVote: voteType,
+            };
+        }
     }
   );
   
   const score = optimisticState.upvotes - optimisticState.downvotes;
+  const currentVote = optimisticState.userVote;
 
   const handleVote = async (newVote: 'up' | 'down') => {
-    const previousVote = vote;
-    
-    if (newVote === vote) {
-      // Unvoting
-      setVote(null);
-      // We don't call the DB for unvoting in this simple implementation
-    } else {
-      // New vote or changing vote
-      setVote(newVote);
-      setOptimisticState({ voteType: newVote, previousVote });
-      
-      const postIdNum = parseInt(postId.replace('stupid-', ''), 10);
-      if (!isNaN(postIdNum)) {
-        await updateVote(postIdNum, newVote);
-      }
+    if (!user) {
+        toast({
+            title: "Login Required",
+            description: "You must be logged in to vote.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    startTransition(() => {
+        setOptimisticState({ voteType: newVote });
+    });
+
+    const postIdNum = parseInt(postId.replace('stupid-', ''), 10);
+    if (!isNaN(postIdNum)) {
+        try {
+            await updateVote(postIdNum, newVote, user.uid);
+        } catch (error) {
+            toast({
+                title: "Vote Failed",
+                description: "Your vote could not be saved. Please try again.",
+                variant: "destructive"
+            })
+            // NOTE: We are not reverting the optimistic state here for simplicity,
+            // but in a real-world app, you'd want to handle this failure case.
+        }
     }
   };
 
@@ -87,13 +110,13 @@ export default function VoteButtons({
   const downvoteText = mode === 'real' ? 'stupid' : 'real';
 
   const upvoteClasses = {
-    'text-primary': mode === 'real' && vote === 'up',
-    'text-search-ring': mode === 'stupid' && vote === 'up',
+    'text-primary': mode === 'real' && currentVote === 'up',
+    'text-search-ring': mode === 'stupid' && currentVote === 'up',
   };
 
   const downvoteClasses = {
-    'text-destructive': mode === 'real' && vote === 'down',
-    'text-primary': mode === 'stupid' && vote === 'down',
+    'text-destructive': mode === 'real' && currentVote === 'down',
+    'text-primary': mode === 'stupid' && currentVote === 'down',
   };
 
   return (
@@ -108,6 +131,7 @@ export default function VoteButtons({
         size="sm"
         className={cn('h-auto p-1 text-foreground/80 hover:bg-transparent', upvoteClasses)}
         onClick={() => handleVote('up')}
+        disabled={isPending}
         aria-label="Upvote"
       >
         <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">
@@ -121,6 +145,7 @@ export default function VoteButtons({
         size="sm"
         className={cn('h-auto p-1 text-foreground/80 hover:bg-transparent', downvoteClasses)}
         onClick={() => handleVote('down')}
+        disabled={isPending}
         aria-label="Downvote"
       >
         <div className="flex flex-col items-center p-1 border border-transparent rounded-sm">

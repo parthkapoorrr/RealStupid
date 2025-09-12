@@ -20,6 +20,7 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
 import { getPosts } from '../actions';
+import { useAuth } from '@/hooks/useAuth';
 
 const formSchema = z.object({
   prompt: z.string().min(1, 'Please enter a prompt.'),
@@ -30,24 +31,46 @@ export default function StupidPage() {
   const [isHelpfulLoading, setIsHelpfulLoading] = useState(false);
   const [stupidPosts, setStupidPosts] = useState<Post[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const { user, stupidUser } = useAuth();
 
   useEffect(() => {
-    async function loadAndProcessPosts() {
+    async function loadPosts() {
       setIsLoadingPosts(true);
-      const realPosts = await getPosts() as Post[];
-      const generatedPosts: Post[] = realPosts.map(post => ({
+      const postsFromDb = await getPosts('stupid', user?.uid) as Post[];
+      
+      if (stupidUser) {
+        const transformedPosts = postsFromDb.map(post => ({
           ...post,
-          id: `stupid-${post.id}`,
-          community: `stupid/${post.community}`,
-          title: `What if ${post.title.toLowerCase()}?`,
-          content: `I was just thinking... ${post.content || ''}`,
-          author: { name: `StupidUser${Math.floor(1000 + Math.random() * 9000)}` },
-      }));
-      setStupidPosts(generatedPosts);
+          author: {
+            name: stupidUser.displayName,
+            avatarUrl: stupidUser.photoURL,
+          },
+          id: `stupid-${post.id}` // Keep prefix for client-side keying and styling
+        }));
+        setStupidPosts(transformedPosts);
+      } else if (postsFromDb.length > 0) {
+        // If stupidUser is not yet available but posts are, wait for user.
+        // This case is less likely if AuthContext resolves first.
+        const checkUser = setInterval(() => {
+          if(stupidUser) {
+            const transformedPosts = postsFromDb.map(post => ({
+              ...post,
+              author: {
+                name: stupidUser.displayName,
+                avatarUrl: stupidUser.photoURL,
+              },
+              id: `stupid-${post.id}`
+            }));
+            setStupidPosts(transformedPosts);
+            clearInterval(checkUser);
+          }
+        }, 100);
+      }
+      
       setIsLoadingPosts(false);
     }
-    loadAndProcessPosts();
-  }, []);
+    loadPosts();
+  }, [user, stupidUser]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -77,7 +100,7 @@ export default function StupidPage() {
                   <Link href="/real">Go Real</Link>
               </Button>
               <Button asChild className="bg-search-ring hover:bg-search-ring/90 text-primary-foreground">
-                  <Link href="/submit">Create Post</Link>
+                  <Link href="/stupid/submit">Create Stupid Post</Link>
               </Button>
             </div>
         </div>
@@ -125,7 +148,7 @@ export default function StupidPage() {
                   </div>
               ))
             ) : (
-              <p className="text-center text-muted-foreground pt-10">No stupid questions to ask yet. Go create a real post first!</p>
+              <p className="text-center text-muted-foreground pt-10">No stupid posts yet. Be the first to create one!</p>
             )}
         </div>
     </div>

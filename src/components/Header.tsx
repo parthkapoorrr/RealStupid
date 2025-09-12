@@ -10,6 +10,7 @@ import { UserNav } from './UserNav';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import SideMenu from './SideMenu';
 
 export default function Header() {
   const { effectiveUser, loading, signInWithGoogle, mode } = useAuth();
@@ -36,14 +37,15 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Link href="/real">
+        <div className="flex items-center space-x-4">
+          <SideMenu />
+          <Link href="/real" className="flex items-center space-x-2">
             <Logo className="h-6 w-6" />
+            <span className="font-bold font-headline text-xl hidden sm:inline">
+              <span className="text-primary">Real</span>
+              <span className="text-search-ring">Stupid</span>
+            </span>
           </Link>
-          <span className="font-bold font-headline text-xl">
-            <Link href="/real"><span className="text-primary">Real</span></Link>
-            <Link href="/stupid"><span className="text-search-ring">Stupid</span></Link>
-          </span>
         </div>
         
         <div className="flex-1 flex justify-center px-4">
