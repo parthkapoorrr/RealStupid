@@ -62,7 +62,7 @@ export default function Header() {
                 <Input
                     placeholder="Search..."
                     className={cn(
-                    "pl-9 placeholder:text-muted-foreground",
+                    "pl-9 placeholder:text-muted-foreground rounded-full",
                     ringClassName
                     )}
                 />
@@ -73,7 +73,7 @@ export default function Header() {
           <nav className="flex items-center space-x-2">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="relative rounded-full">
                   <Bell className="h-5 w-5" />
                   <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
                   <span className="sr-only">Notifications</span>
@@ -102,7 +102,7 @@ export default function Header() {
             ) : effectiveUser ? (
               <UserNav user={effectiveUser} />
             ) : (
-              <button onClick={signInWithGoogle} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">Login</button>
+              <button onClick={signInWithGoogle} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">Login</button>
             )}
           </nav>
         </div>
