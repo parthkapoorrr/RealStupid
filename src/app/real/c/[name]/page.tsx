@@ -6,6 +6,7 @@ import type { Post } from '@/lib/types';
 import { auth } from '@/lib/firebase';
 import { getOrCreateUser } from '@/app/auth/actions';
 import { notFound } from 'next/navigation';
+import { Plus } from 'lucide-react';
 
 export default async function CommunityPage({ params }: { params: { name: string } }) {
   const communityName = params.name;
@@ -30,7 +31,7 @@ export default async function CommunityPage({ params }: { params: { name: string
           </div>
           <div className="flex items-center gap-4">
             <Button asChild>
-                <Link href="/submit">Create Post</Link>
+                <Link href="/submit">Create Post <Plus className="h-4 w-4 ml-2" /></Link>
             </Button>
           </div>
         </div>
@@ -52,3 +53,5 @@ export default async function CommunityPage({ params }: { params: { name: string
       </div>
   );
 }
+
+    

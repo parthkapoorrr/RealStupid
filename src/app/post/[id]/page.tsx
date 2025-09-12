@@ -1,4 +1,5 @@
 
+
 import CommentSection from '@/components/CommentSection';
 import type { Post, Comment } from '@/lib/types';
 import { notFound } from 'next/navigation';
@@ -40,32 +41,27 @@ export default async function PostPage({ params }: { params: { id: string } }) {
   if ((isStupidPost && modeFromPost !== 'stupid') || (!isStupidPost && modeFromPost === 'stupid')) {
     notFound();
   }
+  
+  const postMode = post.mode as 'real' | 'stupid';
 
-  if (isStupidPost) {
-    const currentUser = auth.currentUser;
-    let stupidAuthor = { name: 'StupidUser', avatarUrl: undefined };
-    if (currentUser) {
-        const user = await getOrCreateUser(currentUser.uid, currentUser.displayName, currentUser.email, currentUser.photoURL);
-        const hash = user.id.split('').reduce((acc, char) => {
-            return char.charCodeAt(0) + ((acc << 5) - acc);
-        }, 0);
-        const stupidId = Math.abs(hash) % 10000;
-        const stupidName = `StupidUser${String(stupidId).padStart(4, '0')}`;
-        stupidAuthor = {
-            name: stupidName,
-            avatarUrl: `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${stupidName}`
-        }
-    }
+  if (postMode === 'stupid') {
+    const hash = post.author.name!.split('').reduce((acc, char) => {
+        return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
+    const stupidId = Math.abs(hash) % 10000;
+    const stupidName = `StupidUser${String(stupidId).padStart(4, '0')}`;
     
     post.id = `stupid-${post.id}`;
     post.community = `stupid/${post.community}`;
-    post.author = stupidAuthor;
+    post.author = {
+        name: stupidName,
+        avatarUrl: `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${stupidName}`
+    };
   }
 
   const isImagePost = !!post.imageUrl;
-  const mode = isStupidPost ? 'stupid' : 'real';
-  const communityPrefix = mode === 'real' ? 'r/' : 's/';
-  const communityLink = `/${mode}/c/${post.community}`;
+  const communityPrefix = postMode === 'real' ? 'r/' : 's/';
+  const communityLink = `/${postMode}/c/${post.community}`;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -76,7 +72,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
           downvotes={post.downvotes}
           userVote={post.userVote}
           direction="col"
-          mode={mode}
+          mode={postMode}
         />
         <div className="ml-4 flex-1">
           <div className="text-xs text-muted-foreground">
@@ -128,4 +124,5 @@ export default async function PostPage({ params }: { params: { id: string } }) {
   );
 }
 
+    
     

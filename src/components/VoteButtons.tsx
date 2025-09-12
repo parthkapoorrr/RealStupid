@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useOptimistic, useState, useTransition } from 'react';
+import { useOptimistic, useTransition } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { updateVote } from '@/app/actions';
@@ -59,7 +59,7 @@ export default function VoteButtons({
             // Changing vote
             return {
                 upvotes: state.upvotes + (voteType === 'up' ? 1 : -1),
-                downvotes: state.downvotes + (voteType === 'down' ? 1 : -1),
+                downvotes: state.downvotes + (voteType === 'down' ? -1 : 1),
                 userVote: voteType,
             };
         } else {
@@ -156,3 +156,5 @@ export default function VoteButtons({
     </div>
   );
 }
+
+    

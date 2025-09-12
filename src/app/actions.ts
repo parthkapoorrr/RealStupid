@@ -54,13 +54,17 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         mode: posts.mode,
         authorName: users.displayName,
         authorAvatar: users.photoURL,
-        userVote: sql`null`.as('user_vote'),
+        userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
       })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
       .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
       .$dynamic();
+      
+    if (userId) {
+      query = query.leftJoin(postVotes, and(eq(posts.id, postVotes.postId), eq(postVotes.userId, userId)));
+    }
       
       const allPosts = await query.where(eq(posts.mode, mode))
       .orderBy(desc(posts.createdAt));
@@ -107,7 +111,7 @@ export async function getPostById(postId: number, userId?: string | null) {
     let query = db.select({
         post: posts,
         user: users,
-        userVote: sql`null`.as('user_vote'),
+        userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
     })
     .from(posts)
@@ -115,6 +119,11 @@ export async function getPostById(postId: number, userId?: string | null) {
     .leftJoin(users, eq(posts.userId, users.id))
     .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
     .$dynamic();
+    
+    if (userId) {
+        query.leftJoin(postVotes, and(eq(posts.id, postVotes.postId), eq(postVotes.userId, userId)));
+    }
+
 
     const results = await query;
     
@@ -216,9 +225,11 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
         
         const post = await db.query.posts.findFirst({where: eq(posts.id, postId)});
         revalidatePath('/');
-        revalidatePath(`/${post?.mode}`);
-        revalidatePath(`/${post?.mode}/c/${post?.community}`);
-        revalidatePath(`/post/${postId}`);
+        if (post) {
+            revalidatePath(`/${post.mode}`);
+            revalidatePath(`/${post.mode}/c/${post.community}`);
+            revalidatePath(`/post/${post.id}`);
+        }
 
     } catch(error) {
         console.error("Failed to update vote", error);
@@ -346,13 +357,17 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
        mode: posts.mode,
        authorName: users.displayName,
        authorAvatar: users.photoURL,
-       userVote: sql`null`.as('user_vote'),
+       userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
      })
      .from(posts)
      .leftJoin(users, eq(posts.userId, users.id))
      .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
      .$dynamic();
+     
+    if (userId) {
+        query.leftJoin(postVotes, and(eq(posts.id, postVotes.postId), eq(postVotes.userId, userId)));
+    }
      
    const allPosts = await query.where(and(eq(posts.mode, mode), eq(posts.community, communityName)))
      .orderBy(desc(posts.createdAt));
@@ -384,6 +399,8 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
    return [];
  }
 }
+
+    
 
     
 
