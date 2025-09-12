@@ -9,7 +9,7 @@ import { auth } from '@/lib/firebase';
 import { getOrCreateUser } from './auth/actions';
 
 export async function createPost(formData: FormData) {
-  const values = {
+  const rawValues = {
     userId: formData.get('userId') as string,
     title: formData.get('title') as string,
     community: formData.get('community') as string,
@@ -26,11 +26,20 @@ export async function createPost(formData: FormData) {
     console.log('Image received:', imageFile.name, imageFile.size, 'bytes');
     // Using picsum for a dynamic placeholder. The seed ensures the same image appears for the same post.
     const seed = Math.floor(Math.random() * 1000);
-    values.link = `https://picsum.photos/seed/${seed}/800/600`;
+    rawValues.link = `https://picsum.photos/seed/${seed}/800/600`;
   }
 
+  // Only include fields that are in the schema for validation
+  const valuesToValidate = {
+    userId: rawValues.userId,
+    title: rawValues.title,
+    community: rawValues.community,
+    content: rawValues.content,
+    link: rawValues.link,
+    mode: rawValues.mode,
+  }
 
-  const validatedPost = insertPostSchema.parse(values);
+  const validatedPost = insertPostSchema.parse(valuesToValidate);
 
   try {
     await db.insert(posts).values(validatedPost);
