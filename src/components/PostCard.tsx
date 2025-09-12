@@ -12,7 +12,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, mode = 'real' }: PostCardProps) {
-  const isImagePost = post.link && /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link);
+  const isImagePost = post.link && /\.(jpg|jpeg|png|webp|avif|gif|picsum\.photos)/.test(post.link);
 
   const cardClassName = cn(
     "flex bg-card p-2 rounded-lg transition-colors duration-200",
@@ -51,7 +51,7 @@ export default function PostCard({ post, mode = 'real' }: PostCardProps) {
         {isImagePost ? (
             <Link href={`/post/${post.id}`} className="block mt-2">
                 <div className="relative h-80 overflow-hidden rounded-md">
-                    <Image src={post.link!} alt={post.title} fill className="object-cover" data-ai-hint="cat rock" />
+                    <Image src={post.link!} alt={post.title} fill className="object-cover" data-ai-hint="random image" />
                 </div>
             </Link>
         ) : post.content && (

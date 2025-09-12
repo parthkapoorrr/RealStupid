@@ -23,7 +23,7 @@ export async function createPost(formData: FormData) {
     // In a real app, you would upload this to a storage service like Firebase Storage or an S3 bucket.
     // For now, we'll just log that it's here and store a placeholder URL.
     console.log('Image received:', imageFile.name, imageFile.size, 'bytes');
-    values.link = `/uploads/placeholder.png`; // Placeholder link
+    values.link = `https://picsum.photos/seed/${Math.random()}/800/600`; // Placeholder link
   }
 
 
