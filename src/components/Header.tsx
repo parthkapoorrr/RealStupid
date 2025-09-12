@@ -12,6 +12,11 @@ import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import SideMenu from './SideMenu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export default function Header() {
   const { effectiveUser, loading, signInWithGoogle, mode } = useAuth();
@@ -66,11 +71,32 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <nav className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
-              <span className="sr-only">Notifications</span>
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+                  <span className="sr-only">Notifications</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className={cn(
+                  "w-80",
+                  mode === 'stupid' ? "border-search-ring" : "border-primary"
+                )} 
+                align="end"
+              >
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">Notifications</h4>
+                    <p className="text-sm text-muted-foreground">
+                      No new notifications.
+                    </p>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             {loading ? (
                 <Skeleton className="h-9 w-20" />
             ) : effectiveUser ? (
