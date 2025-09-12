@@ -34,6 +34,7 @@ export const posts = pgTable('posts', {
   title: varchar('title', { length: 256 }).notNull(),
   content: text('content'),
   link: text('link'),
+  imageUrl: text('image_url'),
   userId: varchar('user_id', { length: 191 })
     .notNull()
     .references(() => users.id),

@@ -9,6 +9,7 @@ export interface Post {
   id: string;
   title: string;
   link?: string;
+  imageUrl?: string;
   content?: string;
   author: {
     name: string | null;
@@ -18,6 +19,7 @@ export interface Post {
   createdAt: string;
   upvotes: number;
   downvotes: number;
+
   commentsCount: number;
   mode: 'real' | 'stupid';
   userVote: 'up' | 'down' | null;

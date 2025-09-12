@@ -13,7 +13,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, mode = 'real' }: PostCardProps) {
-  const isImagePost = post.link && (post.link.startsWith('https://picsum.photos') || /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link));
+  const isImagePost = !!post.imageUrl;
 
   const cardClassName = cn(
     "flex bg-card p-2 rounded-lg transition-colors duration-200",
@@ -52,7 +52,7 @@ export default function PostCard({ post, mode = 'real' }: PostCardProps) {
         {isImagePost ? (
             <Link href={`/post/${post.id}`} className="block mt-2">
                 <div className="relative h-80 overflow-hidden rounded-md">
-                    <Image src={post.link!} alt={post.title} fill className="object-cover" data-ai-hint="placeholder image" />
+                    <Image src={post.imageUrl!} alt={post.title} fill className="object-cover" data-ai-hint="placeholder image" />
                 </div>
             </Link>
         ) : post.content && (
@@ -67,7 +67,7 @@ export default function PostCard({ post, mode = 'real' }: PostCardProps) {
             <MessageSquare className="h-4 w-4" />
             <span>{post.commentsCount} Comments</span>
           </Link>
-          {post.link && !isImagePost && (
+          {post.link && (
             <a href={post.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary text-primary">
               <LinkIcon className="h-4 w-4" />
               <span>{new URL(post.link).hostname}</span>

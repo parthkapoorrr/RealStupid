@@ -5,31 +5,27 @@ import { db } from '@/lib/db';
 import { insertPostSchema, posts, users, postVotes, comments, insertCommentSchema } from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache';
 import { and, desc, eq, sql } from 'drizzle-orm';
-import { getOrCreateUser } from './auth/actions';
 
 export async function createPost(formData: FormData) {
+  const imageFile = formData.get('image') as File | null;
+  let imageUrl: string | undefined = undefined;
+
+  if (imageFile && imageFile.size > 0) {
+    const seed = Math.floor(Math.random() * 1000);
+    imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
+  }
+
   const rawValues = {
     userId: formData.get('userId') as string,
     title: formData.get('title') as string,
     community: formData.get('community') as string,
     content: (formData.get('content') as string) || undefined,
     link: (formData.get('link') as string) || undefined,
+    imageUrl: imageUrl,
     mode: (formData.get('mode') as 'real' | 'stupid') || 'real',
   };
 
-  const imageFile = formData.get('image') as File | null;
-  
-  // Create a mutable copy for validation
-  const valuesToValidate = { ...rawValues };
-
-  if (imageFile && imageFile.size > 0) {
-    console.log('Image received:', imageFile.name, imageFile.size, 'bytes');
-    const seed = Math.floor(Math.random() * 1000);
-    // IMPORTANT: Update the link in the object that will be validated
-    valuesToValidate.link = `https://picsum.photos/seed/${seed}/800/600`;
-  }
-
-  const validatedPost = insertPostSchema.parse(valuesToValidate);
+  const validatedPost = insertPostSchema.parse(rawValues);
 
   try {
     await db.insert(posts).values(validatedPost);
@@ -58,6 +54,7 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         title: posts.title,
         content: posts.content,
         link: posts.link,
+        imageUrl: posts.imageUrl,
         community: posts.community,
         createdAt: posts.createdAt,
         upvotes: posts.upvotes,
@@ -80,6 +77,7 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
       title: p.title,
       content: p.content || undefined,
       link: p.link || undefined,
+      imageUrl: p.imageUrl || undefined,
       community: p.community,
       createdAt: new Date(p.createdAt).toLocaleDateString('en-US', {
         month: 'short',
@@ -137,6 +135,7 @@ export async function getPostById(postId: number, userId?: string | null) {
       title: post.title,
       content: post.content ?? undefined,
       link: post.link ?? undefined,
+      imageUrl: post.imageUrl ?? undefined,
       author: {
         name: user?.displayName || 'Unknown User',
         avatarUrl: user?.photoURL || undefined

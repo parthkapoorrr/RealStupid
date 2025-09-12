@@ -1,5 +1,6 @@
 
 
+
 import CommentSection from '@/components/CommentSection';
 import type { Post, Comment } from '@/lib/types';
 import { notFound } from 'next/navigation';
@@ -63,7 +64,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     post.author = stupidAuthor;
   }
 
-  const isImagePost = post.link && (post.link.startsWith('https://picsum.photos') || /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link));
+  const isImagePost = !!post.imageUrl;
   const mode = isStupidPost ? 'stupid' : 'real';
 
   return (
@@ -102,7 +103,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
 
           {isImagePost ? (
             <div className="my-4">
-              <Image src={post.link!} alt={post.title} width={800} height={600} className="rounded-md w-full h-auto" data-ai-hint="placeholder image" />
+              <Image src={post.imageUrl!} alt={post.title} width={800} height={600} className="rounded-md w-full h-auto" data-ai-hint="placeholder image" />
             </div>
           ) : post.link && (
              <a href={post.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-2 mt-4">
