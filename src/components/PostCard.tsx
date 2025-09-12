@@ -25,6 +25,7 @@ export default function PostCard({ post, mode = 'real' }: PostCardProps) {
         postId={post.id}
         upvotes={post.upvotes}
         downvotes={post.downvotes}
+        userVote={post.userVote}
         direction="col"
         mode={mode}
       />

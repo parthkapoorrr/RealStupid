@@ -6,6 +6,8 @@ import {
   integer,
   serial,
   uniqueIndex,
+  primaryKey,
+  pgEnum,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
@@ -42,12 +44,38 @@ export const posts = pgTable('posts', {
   mode: varchar('mode', { length: 10 }).default('real').notNull(), // 'real' or 'stupid'
 });
 
-export const postsRelations = relations(posts, ({ one }) => ({
+export const postsRelations = relations(posts, ({ one, many }) => ({
     user: one(users, {
         fields: [posts.userId],
         references: [users.id],
     }),
+    votes: many(postVotes),
 }));
+
+export const voteTypeEnum = pgEnum('vote_type', ['up', 'down']);
+
+export const postVotes = pgTable('post_votes', {
+    userId: varchar('user_id', {length: 191}).notNull().references(() => users.id, { onDelete: 'cascade' }),
+    postId: integer('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+    voteType: voteTypeEnum('vote_type').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => {
+    return {
+        pk: primaryKey({ columns: [table.userId, table.postId] }),
+    }
+});
+
+export const postVotesRelations = relations(postVotes, ({ one }) => ({
+    post: one(posts, {
+        fields: [postVotes.postId],
+        references: [posts.id],
+    }),
+    user: one(users, {
+        fields: [postVotes.userId],
+        references: [users.id],
+    })
+}));
+
 
 export const comments = pgTable('comments', {
   id: serial('id').primaryKey(),

@@ -19,8 +19,14 @@ export default async function PostPage({ params }: { params: { id: string } }) {
   if (isNaN(postIdNum)) {
     notFound();
   }
+  
+  const firebaseUser = auth.currentUser;
+  let user = null;
+  if (firebaseUser) {
+    user = await getOrCreateUser(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoURL);
+  }
 
-  let post: (Post & { mode: string }) | null = await getPostById(postIdNum) as (Post & { mode: string }) | null;
+  let post: Post | null = await getPostById(postIdNum, user?.id);
   const comments: Comment[] = mockComments[post?.id.replace('stupid-', '') || ''] || [];
 
   if (!post) {
@@ -68,6 +74,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
           postId={post.id}
           upvotes={post.upvotes}
           downvotes={post.downvotes}
+          userVote={post.userVote}
           direction="col"
           mode={mode}
         />

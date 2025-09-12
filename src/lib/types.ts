@@ -20,6 +20,7 @@ export interface Post {
   downvotes: number;
   commentsCount: number;
   mode: 'real' | 'stupid';
+  userVote: 'up' | 'down' | null;
 }
 
 export interface Comment {

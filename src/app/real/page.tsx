@@ -3,9 +3,19 @@ import PostCard from "@/components/PostCard";
 import Link from "next/link";
 import { getPosts } from '../actions';
 import type { Post } from '@/lib/types';
+import { auth } from '@/lib/firebase';
+import { getOrCreateUser } from '../auth/actions';
 
 export default async function RealPage() {
-  const posts: Post[] = await getPosts('real') as Post[];
+  // This is a server component, so we can't use the useAuth hook.
+  // We'll get the user directly from firebase auth.
+  const firebaseUser = auth.currentUser;
+  let user = null;
+  if (firebaseUser) {
+    user = await getOrCreateUser(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoURL);
+  }
+  
+  const posts: Post[] = await getPosts('real', user?.id) as Post[];
   
   return (
       <div className="space-y-6">

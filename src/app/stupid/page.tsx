@@ -31,12 +31,12 @@ export default function StupidPage() {
   const [isHelpfulLoading, setIsHelpfulLoading] = useState(false);
   const [stupidPosts, setStupidPosts] = useState<Post[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
-  const { stupidUser } = useAuth();
+  const { user, stupidUser } = useAuth();
 
   useEffect(() => {
     async function loadPosts() {
       setIsLoadingPosts(true);
-      const postsFromDb = await getPosts('stupid') as Post[];
+      const postsFromDb = await getPosts('stupid', user?.uid) as Post[];
       
       if (stupidUser) {
         const transformedPosts = postsFromDb.map(post => ({
@@ -70,7 +70,7 @@ export default function StupidPage() {
       setIsLoadingPosts(false);
     }
     loadPosts();
-  }, [stupidUser]);
+  }, [user, stupidUser]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
