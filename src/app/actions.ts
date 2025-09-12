@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { insertPostSchema, posts, users, postVotes, comments, insertCommentSchema, communities, insertCommunitySchema } from '@/lib/db/schema';
+import { insertPostSchema, posts, users, postVotes, comments, insertCommentSchema, communities, insertCommunitySchema, voteTypeEnum } from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -21,10 +21,8 @@ export async function createPost(formData: FormData) {
 
   try {
     await db.insert(posts).values(validatedPost);
-    revalidatePath('/real');
-    revalidatePath('/stupid');
-    revalidatePath(`/real/c/${validatedPost.community}`);
-    revalidatePath(`/stupid/c/${validatedPost.community}`);
+    revalidatePath(`/${validatedPost.mode}`);
+    revalidatePath(`/${validatedPost.mode}/c/${validatedPost.community}`);
   } catch (error) {
     console.error('Database error:', error);
     throw new Error('Failed to save post to the database.');
@@ -42,7 +40,16 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
       .groupBy(comments.postId)
       .as('comment_counts');
 
-    const allPosts = await db
+    const userVoteSubquery = userId ? db
+      .select({
+        postId: postVotes.postId,
+        voteType: postVotes.voteType,
+      })
+      .from(postVotes)
+      .where(eq(postVotes.userId, userId))
+      .as('user_votes') : null;
+
+    let query = db
       .select({
         id: posts.id,
         title: posts.title,
@@ -56,13 +63,19 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         mode: posts.mode,
         authorName: users.displayName,
         authorAvatar: users.photoURL,
-        userVote: sql`null`.as('user_vote'), // Temporarily disabled
+        userVote: userId && userVoteSubquery ? userVoteSubquery.voteType : sql`null`.as('user_vote'),
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
       })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
       .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
-      .where(eq(posts.mode, mode))
+      .$dynamic();
+      
+      if (userId && userVoteSubquery) {
+        query = query.leftJoin(userVoteSubquery, eq(posts.id, userVoteSubquery.postId));
+      }
+      
+      const allPosts = await query.where(eq(posts.mode, mode))
       .orderBy(desc(posts.createdAt));
 
     return allPosts.map(p => ({
@@ -84,7 +97,7 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         name: p.authorName || 'Unknown User',
         avatarUrl: p.authorAvatar,
       },
-      userVote: p.userVote,
+      userVote: p.userVote as 'up' | 'down' | null,
       commentsCount: p.commentsCount,
     }));
   } catch (error) {
@@ -104,17 +117,32 @@ export async function getPostById(postId: number, userId?: string | null) {
     .groupBy(comments.postId)
     .as('comment_counts');
 
-    const results = await db.select({
+    const userVoteSubquery = userId ? db
+      .select({
+        postId: postVotes.postId,
+        voteType: postVotes.voteType,
+      })
+      .from(postVotes)
+      .where(and(eq(postVotes.userId, userId), eq(postVotes.postId, postId)))
+      .as('user_votes') : null;
+
+    let query = db.select({
         post: posts,
         user: users,
-        userVote: sql`null`.as('user_vote'), // Temporarily disabled
+        userVote: userId && userVoteSubquery ? userVoteSubquery.voteType : sql`null`.as('user_vote'),
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
     })
     .from(posts)
     .where(eq(posts.id, postId))
     .leftJoin(users, eq(posts.userId, users.id))
-    .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId));
+    .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
+    .$dynamic();
 
+    if (userId && userVoteSubquery) {
+      query = query.leftJoin(userVoteSubquery, eq(posts.id, userVoteSubquery.postId));
+    }
+
+    const results = await query;
     
     if (results.length === 0 || !results[0].post) {
         return null;
@@ -140,7 +168,7 @@ export async function getPostById(postId: number, userId?: string | null) {
       }),
       upvotes: post.upvotes,
       downvotes: post.downvotes,
-      userVote: userVote,
+      userVote: userVote as 'up' | 'down' | null,
       commentsCount: commentsCount,
       mode: post.mode as 'real' | 'stupid',
     };
@@ -154,17 +182,7 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
     if (!userId) {
         throw new Error("User must be logged in to vote.");
     }
-    
-    // This function is temporarily disabled to prevent crashes.
-    console.warn("Voting is temporarily disabled until the database schema is updated.");
-    
-    revalidatePath('/');
-    revalidatePath('/real');
-    revalidatePath('/stupid');
-    revalidatePath(`/post/${postId}`);
 
-    // The original logic is commented out below.
-    /*
     try {
         await db.transaction(async (tx) => {
             const existingVote = await tx.query.postVotes.findFirst({
@@ -177,10 +195,12 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
                     await tx.delete(postVotes).where(
                         and(eq(postVotes.postId, postId), eq(postVotes.userId, userId))
                     );
-                    const fieldToDecrement = voteType === 'up' ? posts.upvotes : posts.downvotes;
-                    await tx.update(posts)
-                        .set({ [voteType === 'up' ? 'upvotes' : 'downvotes']: sql`${fieldToDecrement} - 1` })
-                        .where(eq(posts.id, postId));
+                    
+                    if (voteType === 'up') {
+                        await tx.update(posts).set({ upvotes: sql`${posts.upvotes} - 1` }).where(eq(posts.id, postId));
+                    } else {
+                        await tx.update(posts).set({ downvotes: sql`${posts.downvotes} - 1` }).where(eq(posts.id, postId));
+                    }
 
                 } else {
                     // User is changing their vote
@@ -188,14 +208,21 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
                         .set({ voteType: voteType })
                         .where(and(eq(postVotes.postId, postId), eq(postVotes.userId, userId)));
                     
-                    const fieldToDecrement = existingVote.voteType === 'up' ? posts.upvotes : posts.downvotes;
-                    const fieldToIncrement = voteType === 'up' ? posts.upvotes : posts.downvotes;
-                    await tx.update(posts)
-                        .set({ 
-                            [existingVote.voteType === 'up' ? 'upvotes' : 'downvotes']: sql`${fieldToDecrement} - 1`,
-                            [voteType === 'up' ? 'upvotes' : 'downvotes']: sql`${fieldToIncrement} + 1` 
-                        })
-                        .where(eq(posts.id, postId));
+                    if (voteType === 'up') { // old vote was down
+                        await tx.update(posts)
+                            .set({ 
+                                upvotes: sql`${posts.upvotes} + 1`,
+                                downvotes: sql`${posts.downvotes} - 1`
+                            })
+                            .where(eq(posts.id, postId));
+                    } else { // old vote was up
+                        await tx.update(posts)
+                            .set({ 
+                                upvotes: sql`${posts.upvotes} - 1`,
+                                downvotes: sql`${posts.downvotes} + 1`
+                            })
+                            .where(eq(posts.id, postId));
+                    }
                 }
             } else {
                 // New vote
@@ -204,23 +231,25 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
                     userId,
                     voteType,
                 });
-                 const fieldToIncrement = voteType === 'up' ? posts.upvotes : posts.downvotes;
-                 await tx.update(posts)
-                     .set({ [voteType === 'up' ? 'upvotes' : 'downvotes']: sql`${fieldToIncrement} + 1` })
-                     .where(eq(posts.id, postId));
+
+                 if (voteType === 'up') {
+                     await tx.update(posts).set({ upvotes: sql`${posts.upvotes} + 1` }).where(eq(posts.id, postId));
+                 } else {
+                     await tx.update(posts).set({ downvotes: sql`${posts.downvotes} + 1` }).where(eq(posts.id, postId));
+                 }
             }
         });
         
+        const post = await db.query.posts.findFirst({where: eq(posts.id, postId)});
         revalidatePath('/');
-        revalidatePath('/real');
-        revalidatePath('/stupid');
+        revalidatePath(`/${post?.mode}`);
+        revalidatePath(`/${post?.mode}/c/${post?.community}`);
         revalidatePath(`/post/${postId}`);
 
     } catch(error) {
         console.error("Failed to update vote", error);
         throw new Error("Could not update vote count.");
     }
-    */
 }
 
 export async function createComment(formData: FormData) {
@@ -329,7 +358,16 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
      .groupBy(comments.postId)
      .as('comment_counts');
 
-   const allPosts = await db
+    const userVoteSubquery = userId ? db
+      .select({
+        postId: postVotes.postId,
+        voteType: postVotes.voteType,
+      })
+      .from(postVotes)
+      .where(eq(postVotes.userId, userId))
+      .as('user_votes') : null;
+
+   let query = db
      .select({
        id: posts.id,
        title: posts.title,
@@ -343,13 +381,19 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
        mode: posts.mode,
        authorName: users.displayName,
        authorAvatar: users.photoURL,
-       userVote: sql`null`.as('user_vote'), // Temporarily disabled
+       userVote: userId && userVoteSubquery ? userVoteSubquery.voteType : sql`null`.as('user_vote'),
        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
      })
      .from(posts)
      .leftJoin(users, eq(posts.userId, users.id))
      .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
-     .where(and(eq(posts.mode, mode), eq(posts.community, communityName)))
+     .$dynamic();
+
+    if (userId && userVoteSubquery) {
+      query = query.leftJoin(userVoteSubquery, eq(posts.id, userVoteSubquery.postId));
+    }
+
+   const allPosts = await query.where(and(eq(posts.mode, mode), eq(posts.community, communityName)))
      .orderBy(desc(posts.createdAt));
 
    return allPosts.map(p => ({
@@ -371,7 +415,7 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
        name: p.authorName || 'Unknown User',
        avatarUrl: p.authorAvatar,
      },
-     userVote: p.userVote,
+     userVote: p.userVote as 'up' | 'down' | null,
      commentsCount: p.commentsCount,
    }));
  } catch (error) {
