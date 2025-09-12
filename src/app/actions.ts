@@ -155,6 +155,16 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
         throw new Error("User must be logged in to vote.");
     }
     
+    // This function is temporarily disabled to prevent crashes.
+    console.warn("Voting is temporarily disabled until the database schema is updated.");
+    
+    revalidatePath('/');
+    revalidatePath('/real');
+    revalidatePath('/stupid');
+    revalidatePath(`/post/${postId}`);
+
+    // The original logic is commented out below.
+    /*
     try {
         await db.transaction(async (tx) => {
             const existingVote = await tx.query.postVotes.findFirst({
@@ -210,6 +220,7 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
         console.error("Failed to update vote", error);
         throw new Error("Could not update vote count.");
     }
+    */
 }
 
 export async function createComment(formData: FormData) {
@@ -368,3 +379,5 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
    return [];
  }
 }
+
+    
