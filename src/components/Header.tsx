@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -39,13 +40,15 @@ export default function Header() {
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
         <div className="flex items-center space-x-4">
           <SideMenu />
-          <Link href="/real" className="flex items-center space-x-2">
-            <Logo className="h-6 w-6" />
-            <span className="font-bold font-headline text-xl hidden sm:inline">
-              <span className="text-primary">Real</span>
-              <span className="text-search-ring">Stupid</span>
+          <div className="flex items-center space-x-2">
+            <Link href="/real">
+              <Logo className="h-6 w-6" />
+            </Link>
+            <span className="font-bold font-headline text-xl hidden sm:inline-block">
+              <Link href="/real" className="text-primary hover:text-primary/90 transition-colors">Real</Link>
+              <Link href="/stupid" className="text-search-ring hover:text-search-ring/90 transition-colors">Stupid</Link>
             </span>
-          </Link>
+          </div>
         </div>
         
         <div className="flex-1 flex justify-center px-4">
