@@ -2,35 +2,40 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { insertPostSchema, posts, users, postVotes, comments, insertCommentSchema } from '@/lib/db/schema';
+import { insertPostSchema, posts, users, postVotes, comments, insertCommentSchema, communities, insertCommunitySchema } from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache';
 import { and, desc, eq, sql } from 'drizzle-orm';
+import { z } from 'zod';
 
 export async function createPost(formData: FormData) {
   const imageFile = formData.get('image') as File | null;
-  let imageUrl: string | undefined = undefined;
-
-  if (imageFile && imageFile.size > 0) {
-    const seed = Math.floor(Math.random() * 1000);
-    imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
-  }
-
+  
   const rawValues = {
     userId: formData.get('userId') as string,
     title: formData.get('title') as string,
     community: formData.get('community') as string,
     content: (formData.get('content') as string) || undefined,
     link: (formData.get('link') as string) || undefined,
-    imageUrl: imageUrl,
+    imageUrl: undefined as string | undefined, // Initialize imageUrl as undefined
     mode: (formData.get('mode') as 'real' | 'stupid') || 'real',
   };
 
+  if (imageFile && imageFile.size > 0) {
+    // In a real app, you'd upload this to a storage bucket (e.g., S3, Firebase Storage)
+    // For now, we'll use a placeholder.
+    const seed = Math.floor(Math.random() * 1000);
+    rawValues.imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
+    rawValues.link = undefined; // Ensure link is not set when image is present
+  }
+  
   const validatedPost = insertPostSchema.parse(rawValues);
 
   try {
     await db.insert(posts).values(validatedPost);
     revalidatePath('/real');
     revalidatePath('/stupid');
+    revalidatePath(`/real/c/${validatedPost.community}`);
+    revalidatePath(`/stupid/c/${validatedPost.community}`);
   } catch (error) {
     console.error('Database error:', error);
     throw new Error('Failed to save post to the database.');
@@ -274,4 +279,106 @@ export async function getComments(postId: number) {
     console.error('Database error fetching comments:', error);
     return [];
   }
+}
+
+const createCommunitySchema = z.object({
+  name: z.string().min(3).max(21).regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores are allowed."),
+  creatorId: z.string(),
+  mode: z.enum(['real', 'stupid']),
+});
+
+export async function createCommunity(formData: FormData) {
+  const rawValues = {
+    name: formData.get('communityName') as string,
+    creatorId: formData.get('creatorId') as string,
+    mode: formData.get('mode') as 'real' | 'stupid',
+  };
+
+  const validatedCommunity = createCommunitySchema.parse(rawValues);
+
+  try {
+    await db.insert(communities).values(validatedCommunity);
+    revalidatePath('/'); // Revalidate home to update community lists
+    return { success: true, name: validatedCommunity.name };
+  } catch (error) {
+    console.error('Database error creating community:', error);
+    // Check for unique constraint violation
+    if ((error as any)?.code === '23505') {
+      return { success: false, message: 'Community name already exists.' };
+    }
+    return { success: false, message: 'Failed to create community.' };
+  }
+}
+
+export async function getCommunities() {
+  try {
+    const allCommunities = await db.select().from(communities).orderBy(desc(communities.createdAt));
+    return allCommunities;
+  } catch (error) {
+    console.error('Database error fetching communities:', error);
+    return [];
+  }
+}
+
+export async function getPostsByCommunity(communityName: string, mode: 'real' | 'stupid', userId?: string | null) {
+  try {
+    const commentCountSubquery = db
+     .select({
+       postId: comments.postId,
+       count: sql<number>`count(*)`.as('comment_count'),
+     })
+     .from(comments)
+     .groupBy(comments.postId)
+     .as('comment_counts');
+
+   const allPosts = await db
+     .select({
+       id: posts.id,
+       title: posts.title,
+       content: posts.content,
+       link: posts.link,
+       imageUrl: posts.imageUrl,
+       community: posts.community,
+       createdAt: posts.createdAt,
+       upvotes: posts.upvotes,
+       downvotes: posts.downvotes,
+       mode: posts.mode,
+       authorName: users.displayName,
+       authorAvatar: users.photoURL,
+       userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
+       commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
+     })
+     .from(posts)
+     .leftJoin(users, eq(posts.userId, users.id))
+     .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`))
+     .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
+     .where(and(eq(posts.mode, mode), eq(posts.community, communityName)))
+     .orderBy(desc(posts.createdAt));
+
+   return allPosts.map(p => ({
+     id: String(p.id),
+     title: p.title,
+     content: p.content || undefined,
+     link: p.link || undefined,
+     imageUrl: p.imageUrl || undefined,
+     community: p.community,
+     createdAt: new Date(p.createdAt).toLocaleDateString('en-US', {
+       month: 'short',
+       day: 'numeric',
+       year: 'numeric',
+     }),
+     upvotes: p.upvotes,
+     downvotes: p.downvotes,
+     mode: p.mode as 'real' | 'stupid',
+     author: {
+       name: p.authorName || 'Unknown User',
+       avatarUrl: p.authorAvatar,
+     },
+     userVote: p.userVote,
+     commentsCount: p.commentsCount,
+   }));
+ } catch (error) {
+   console.error('Database error fetching posts by community:', error);
+   return [];
+ }
 }

@@ -1,6 +1,3 @@
-
-
-
 import CommentSection from '@/components/CommentSection';
 import type { Post, Comment } from '@/lib/types';
 import { notFound } from 'next/navigation';
@@ -66,6 +63,8 @@ export default async function PostPage({ params }: { params: { id: string } }) {
 
   const isImagePost = !!post.imageUrl;
   const mode = isStupidPost ? 'stupid' : 'real';
+  const communityPrefix = mode === 'real' ? 'r/' : 's/';
+  const communityLink = `/${mode}/c/${post.community}`;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -81,10 +80,10 @@ export default async function PostPage({ params }: { params: { id: string } }) {
         <div className="ml-4 flex-1">
           <div className="text-xs text-muted-foreground">
             <Link
-              href={`/${mode}/c/${post.community}`}
+              href={communityLink}
               className="font-bold text-foreground hover:underline"
             >
-              c/{post.community}
+              {communityPrefix}{post.community}
             </Link>
             <span className="mx-1">•</span>
             <span>Posted by u/{post.author.name}</span>

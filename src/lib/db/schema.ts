@@ -29,6 +29,14 @@ export const users = pgTable(
   }
 );
 
+export const communities = pgTable('communities', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 128 }).notNull().unique(),
+    creatorId: varchar('user_id', { length: 191 }).notNull().references(() => users.id),
+    mode: varchar('mode', { length: 10 }).default('real').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const posts = pgTable('posts', {
   id: serial('id').primaryKey(),
   title: varchar('title', { length: 256 }).notNull(),
@@ -118,10 +126,16 @@ export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 export type User = z.infer<typeof selectUserSchema>;
 
-export const insertPostSchema = createInsertSchema(posts);
+export const insertPostSchema = createInsertSchema(posts, {
+  link: schema => schema.link.url().optional().or(schema.link.length(0)),
+});
 export const selectPostSchema = createSelectSchema(posts);
 export type Post = z.infer<typeof selectPostSchema>;
 
 export const insertCommentSchema = createInsertSchema(comments);
 export const selectCommentSchema = createSelectSchema(comments);
 export type Comment = z.infer<typeof selectCommentSchema>;
+
+export const insertCommunitySchema = createInsertSchema(communities);
+export const selectCommunitySchema = createSelectSchema(communities);
+export type Community = z.infer<typeof selectCommunitySchema>;

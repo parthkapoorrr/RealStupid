@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,9 +16,12 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { createCommunity } from '@/app/actions';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
-  communityName: z.string().min(3, 'Community name must be at least 3 characters.').max(21, 'Community name cannot be longer than 21 characters.'),
+  communityName: z.string().min(3, 'Community name must be at least 3 characters.').max(21, 'Community name cannot be longer than 21 characters.').regex(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, and underscores are allowed.'),
 });
 
 interface CreateCommunityFormProps {
@@ -28,7 +30,8 @@ interface CreateCommunityFormProps {
 
 export default function CreateCommunityForm({ onCommunityCreated }: CreateCommunityFormProps) {
   const { toast } = useToast();
-  const { mode } = useAuth();
+  const { mode, user } = useAuth();
+  const router = useRouter();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,16 +44,35 @@ export default function CreateCommunityForm({ onCommunityCreated }: CreateCommun
   const prefix = effectiveMode === 'real' ? 'r/' : 's/';
   const ringColor = effectiveMode === 'real' ? 'focus-visible:ring-ring' : 'focus-visible:ring-search-ring';
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log('Creating community:', `${prefix}${values.communityName}`);
-    // In a real app, you would call a server action here to create the community.
-    toast({
-      title: 'Community Created!',
-      description: `Your new community ${prefix}${values.communityName} is ready.`,
-    });
-    form.reset();
-    if (onCommunityCreated) {
-      onCommunityCreated();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user) {
+        toast({ title: "Login Required", description: "You must be logged in to create a community.", variant: "destructive" });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('communityName', values.communityName);
+    formData.append('creatorId', user.uid);
+    formData.append('mode', effectiveMode);
+
+    const result = await createCommunity(formData);
+
+    if (result.success) {
+        toast({
+            title: 'Community Created!',
+            description: `Your new community ${prefix}${result.name} is ready.`,
+        });
+        form.reset();
+        if (onCommunityCreated) {
+            onCommunityCreated();
+        }
+        router.refresh(); // Refresh the page to update community list in side menu
+    } else {
+        toast({
+            title: 'Creation Failed',
+            description: result.message,
+            variant: 'destructive',
+        });
     }
   };
 
@@ -80,7 +102,8 @@ export default function CreateCommunityForm({ onCommunityCreated }: CreateCommun
           )}
         />
         <div className="flex justify-end">
-            <Button type="submit" className={cn(effectiveMode === 'real' ? "bg-primary text-primary-foreground" : "bg-search-ring text-primary-foreground")}>
+            <Button type="submit" disabled={form.formState.isSubmitting} className={cn(effectiveMode === 'real' ? "bg-primary text-primary-foreground" : "bg-search-ring text-primary-foreground")}>
+                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Community
             </Button>
         </div>
