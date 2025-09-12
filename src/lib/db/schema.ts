@@ -39,6 +39,7 @@ export const posts = pgTable('posts', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   upvotes: integer('upvotes').default(0).notNull(),
   downvotes: integer('downvotes').default(0).notNull(),
+  mode: varchar('mode', { length: 10 }).default('real').notNull(), // 'real' or 'stupid'
 });
 
 export const postsRelations = relations(posts, ({ one }) => ({

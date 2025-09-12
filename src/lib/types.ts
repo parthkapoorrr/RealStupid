@@ -19,12 +19,13 @@ export interface Post {
   upvotes: number;
   downvotes: number;
   commentsCount: number;
+  mode: 'real' | 'stupid';
 }
 
 export interface Comment {
   id: string;
   author: {
-    name: string;
+    name:string;
     avatarUrl?: string;
   };
   content: string;

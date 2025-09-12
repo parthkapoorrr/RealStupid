@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
 import { getPostById } from '@/app/actions';
+import { getOrCreateUser } from '@/app/auth/actions';
+import { auth } from '@/lib/firebase';
 
 export default async function PostPage({ params }: { params: { id: string } }) {
   const isStupidPost = params.id.startsWith('stupid-');
@@ -18,21 +20,40 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     notFound();
   }
 
-  let post: Post | null = await getPostById(postIdNum) as Post | null;
+  let post: (Post & { mode: string }) | null = await getPostById(postIdNum) as (Post & { mode: string }) | null;
   const comments: Comment[] = mockComments[post?.id.replace('stupid-', '') || ''] || [];
 
   if (!post) {
     notFound();
   }
 
+  // If the URL has a `stupid-` prefix but the post is 'real' (or vice-versa), it's a 404.
+  const modeFromPost = post.mode || 'real';
+  if ((isStupidPost && modeFromPost !== 'stupid') || (!isStupidPost && modeFromPost === 'stupid')) {
+    notFound();
+  }
+
   if (isStupidPost) {
+    const currentUser = auth.currentUser;
+    let stupidAuthor = { name: 'StupidUser', avatarUrl: undefined };
+    if (currentUser) {
+        const user = await getOrCreateUser(currentUser.uid, currentUser.displayName, currentUser.email, currentUser.photoURL);
+        const hash = user.id.split('').reduce((acc, char) => {
+            return char.charCodeAt(0) + ((acc << 5) - acc);
+        }, 0);
+        const stupidId = Math.abs(hash) % 10000;
+        const stupidName = `StupidUser${String(stupidId).padStart(4, '0')}`;
+        stupidAuthor = {
+            name: stupidName,
+            avatarUrl: `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${stupidName}`
+        }
+    }
+    
     post = {
       ...post,
       id: `stupid-${post.id}`,
       community: `stupid/${post.community}`,
-      title: `What if ${post.title.toLowerCase()}?`,
-      content: `I was just thinking... ${post.content || ''}`,
-      author: { name: `StupidUser${Math.floor(1000 + Math.random() * 9000)}` },
+      author: stupidAuthor,
     }
   }
 
@@ -53,7 +74,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
         <div className="ml-4 flex-1">
           <div className="text-xs text-muted-foreground">
             <Link
-              href={`/c/${post.community}`}
+              href={`/${mode}/c/${post.community}`}
               className="font-bold text-foreground hover:underline"
             >
               c/{post.community}

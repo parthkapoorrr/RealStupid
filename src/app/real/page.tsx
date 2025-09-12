@@ -5,7 +5,7 @@ import { getPosts } from '../actions';
 import type { Post } from '@/lib/types';
 
 export default async function RealPage() {
-  const posts: Post[] = await getPosts() as Post[];
+  const posts: Post[] = await getPosts('real') as Post[];
   
   return (
       <div className="space-y-6">

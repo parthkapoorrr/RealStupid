@@ -12,6 +12,7 @@ export async function createPost(formData: FormData) {
     community: formData.get('community') as string,
     content: (formData.get('content') as string) || undefined,
     link: (formData.get('link') as string) || undefined,
+    mode: (formData.get('mode') as 'real' | 'stupid') || 'real',
   };
 
   const imageFile = formData.get('image') as File | null;
@@ -36,7 +37,7 @@ export async function createPost(formData: FormData) {
   }
 }
 
-export async function getPosts() {
+export async function getPosts(mode: 'real' | 'stupid') {
   try {
     const allPosts = await db
       .select({
@@ -48,6 +49,7 @@ export async function getPosts() {
         createdAt: posts.createdAt,
         upvotes: posts.upvotes,
         downvotes: posts.downvotes,
+        mode: posts.mode,
         author: {
           name: users.displayName,
           avatarUrl: users.photoURL,
@@ -57,6 +59,7 @@ export async function getPosts() {
       })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
+      .where(eq(posts.mode, mode))
       .orderBy(desc(posts.createdAt));
 
     return allPosts.map(p => ({
@@ -69,6 +72,7 @@ export async function getPosts() {
       }),
       // Ensure id is a string for consistency with mock data and component props
       id: String(p.id),
+      // In stupid mode, the author name is overridden client-side
     }));
   } catch (error) {
     console.error('Database error fetching posts:', error);
@@ -113,6 +117,7 @@ export async function getPostById(postId: number) {
       upvotes: post.upvotes,
       downvotes: post.downvotes,
       commentsCount: 0, // Placeholder
+      mode: post.mode,
     };
   } catch (error) {
     console.error('Database error fetching post by ID:', error);

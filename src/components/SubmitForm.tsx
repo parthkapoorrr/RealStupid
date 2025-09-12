@@ -24,6 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { createPost } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long.'),
@@ -33,7 +34,11 @@ const formSchema = z.object({
   image: z.instanceof(File).optional(),
 });
 
-export default function SubmitForm() {
+interface SubmitFormProps {
+    mode?: 'real' | 'stupid';
+}
+
+export default function SubmitForm({ mode = 'real'}: SubmitFormProps) {
   const { toast } = useToast();
   const { effectiveUser, loading } = useAuth();
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -93,6 +98,7 @@ export default function SubmitForm() {
     formData.append('userId', effectiveUser.uid);
     formData.append('title', values.title);
     formData.append('community', values.community);
+    formData.append('mode', mode);
     if (values.link) formData.append('link', values.link);
     if (values.content) formData.append('content', values.content);
     if (values.image) {
@@ -107,7 +113,7 @@ export default function SubmitForm() {
       });
       form.reset();
       // Force a hard reload to ensure the new post is fetched.
-      window.location.href = '/real';
+      window.location.href = `/${mode}`;
     } catch (error) {
       console.error('Failed to create post', error);
       toast({
@@ -261,7 +267,7 @@ export default function SubmitForm() {
         />
         <Button
           type="submit"
-          className="bg-primary text-primary-foreground font-bold"
+          className={cn(mode === 'real' ? "bg-primary text-primary-foreground" : "bg-search-ring text-primary-foreground", "font-bold")}
           disabled={form.formState.isSubmitting}
         >
           {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

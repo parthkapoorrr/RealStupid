@@ -36,10 +36,18 @@ function getMode(pathname: string): 'real' | 'stupid' | 'none' {
     if (pathname.startsWith('/stupid')) {
         return 'stupid';
     }
-    if (pathname.startsWith('/real') || pathname === '/') {
+    if (pathname.startsWith('/real') || pathname === '/' || pathname.startsWith('/submit')) {
         return 'real';
     }
     return 'none';
+}
+
+function generateStupidName(uid: string) {
+    const hash = uid.split('').reduce((acc, char) => {
+        return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
+    const stupidId = Math.abs(hash) % 10000;
+    return `StupidUser${String(stupidId).padStart(4, '0')}`;
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -68,8 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const realUser = { uid, displayName, email, photoURL };
         setUser(realUser);
 
-        const randomId = Math.floor(1000 + Math.random() * 9000);
-        const stupidName = `StupidUser${randomId}`;
+        const stupidName = generateStupidName(uid);
         setStupidUser({
             ...realUser,
             displayName: stupidName,
