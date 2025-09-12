@@ -40,15 +40,6 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
       .groupBy(comments.postId)
       .as('comment_counts');
 
-    const userVoteSubquery = userId ? db
-      .select({
-        postId: postVotes.postId,
-        voteType: postVotes.voteType,
-      })
-      .from(postVotes)
-      .where(eq(postVotes.userId, userId))
-      .as('user_votes') : null;
-
     let query = db
       .select({
         id: posts.id,
@@ -63,17 +54,13 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         mode: posts.mode,
         authorName: users.displayName,
         authorAvatar: users.photoURL,
-        userVote: userId && userVoteSubquery ? userVoteSubquery.voteType : sql`null`.as('user_vote'),
+        userVote: sql`null`.as('user_vote'),
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
       })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
       .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
       .$dynamic();
-      
-      if (userId && userVoteSubquery) {
-        query = query.leftJoin(userVoteSubquery, eq(posts.id, userVoteSubquery.postId));
-      }
       
       const allPosts = await query.where(eq(posts.mode, mode))
       .orderBy(desc(posts.createdAt));
@@ -117,19 +104,10 @@ export async function getPostById(postId: number, userId?: string | null) {
     .groupBy(comments.postId)
     .as('comment_counts');
 
-    const userVoteSubquery = userId ? db
-      .select({
-        postId: postVotes.postId,
-        voteType: postVotes.voteType,
-      })
-      .from(postVotes)
-      .where(and(eq(postVotes.userId, userId), eq(postVotes.postId, postId)))
-      .as('user_votes') : null;
-
     let query = db.select({
         post: posts,
         user: users,
-        userVote: userId && userVoteSubquery ? userVoteSubquery.voteType : sql`null`.as('user_vote'),
+        userVote: sql`null`.as('user_vote'),
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
     })
     .from(posts)
@@ -137,10 +115,6 @@ export async function getPostById(postId: number, userId?: string | null) {
     .leftJoin(users, eq(posts.userId, users.id))
     .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
     .$dynamic();
-
-    if (userId && userVoteSubquery) {
-      query = query.leftJoin(userVoteSubquery, eq(posts.id, userVoteSubquery.postId));
-    }
 
     const results = await query;
     
@@ -358,15 +332,6 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
      .groupBy(comments.postId)
      .as('comment_counts');
 
-    const userVoteSubquery = userId ? db
-      .select({
-        postId: postVotes.postId,
-        voteType: postVotes.voteType,
-      })
-      .from(postVotes)
-      .where(eq(postVotes.userId, userId))
-      .as('user_votes') : null;
-
    let query = db
      .select({
        id: posts.id,
@@ -381,18 +346,14 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
        mode: posts.mode,
        authorName: users.displayName,
        authorAvatar: users.photoURL,
-       userVote: userId && userVoteSubquery ? userVoteSubquery.voteType : sql`null`.as('user_vote'),
+       userVote: sql`null`.as('user_vote'),
        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
      })
      .from(posts)
      .leftJoin(users, eq(posts.userId, users.id))
      .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
      .$dynamic();
-
-    if (userId && userVoteSubquery) {
-      query = query.leftJoin(userVoteSubquery, eq(posts.id, userVoteSubquery.postId));
-    }
-
+     
    const allPosts = await query.where(and(eq(posts.mode, mode), eq(posts.community, communityName)))
      .orderBy(desc(posts.createdAt));
 
@@ -423,5 +384,7 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
    return [];
  }
 }
+
+    
 
     
