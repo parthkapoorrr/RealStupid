@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Loader2, Bot, Sparkles } from 'lucide-react';
+import { Loader2, Bot, Sparkles, Plus } from 'lucide-react';
 import { askStupidBot } from '@/ai/flows/stupid-bot';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import PostCard from '@/components/PostCard';
@@ -100,7 +100,7 @@ export default function StupidPage() {
                   <Link href="/real">Go Real</Link>
               </Button>
               <Button asChild className="bg-search-ring hover:bg-search-ring/90 text-primary-foreground">
-                  <Link href="/stupid/submit">Create Stupid Post</Link>
+                  <Link href="/stupid/submit">Create <Plus className="h-4 w-4 -ml-1" /></Link>
               </Button>
             </div>
         </div>
