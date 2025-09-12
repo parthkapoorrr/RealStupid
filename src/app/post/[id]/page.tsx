@@ -1,3 +1,4 @@
+
 import CommentSection from '@/components/CommentSection';
 import type { Post, Comment } from '@/lib/types';
 import { notFound } from 'next/navigation';
@@ -126,3 +127,5 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    
