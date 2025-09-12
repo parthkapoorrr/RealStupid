@@ -8,27 +8,16 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 export async function createPost(formData: FormData) {
-  const imageFile = formData.get('image') as File | null;
-  
   const rawValues = {
     userId: formData.get('userId') as string,
     title: formData.get('title') as string,
     community: formData.get('community') as string,
     content: (formData.get('content') as string) || undefined,
     link: (formData.get('link') as string) || undefined,
-    imageUrl: undefined as string | undefined, // Initialize imageUrl as undefined
     mode: (formData.get('mode') as 'real' | 'stupid') || 'real',
   };
-
-  if (imageFile && imageFile.size > 0) {
-    // In a real app, you'd upload this to a storage bucket (e.g., S3, Firebase Storage)
-    // For now, we'll use a placeholder.
-    const seed = Math.floor(Math.random() * 1000);
-    rawValues.imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
-    rawValues.link = undefined; // Ensure link is not set when image is present
-  }
   
-  const validatedPost = insertPostSchema.parse(rawValues);
+  const validatedPost = insertPostSchema.omit({imageUrl: true}).parse(rawValues);
 
   try {
     await db.insert(posts).values(validatedPost);
@@ -382,5 +371,3 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
    return [];
  }
 }
-
-    

@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { suggestCommunity } from '@/ai/flows/suggest-community';
 import { useState } from 'react';
 import { Badge } from './ui/badge';
-import { Loader2, Wand2, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Wand2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { createPost } from '@/app/actions';
@@ -32,7 +32,6 @@ const formSchema = z.object({
   community: z.string().min(2, 'Community name is required.'),
   link: z.string().url('Please enter a valid URL.').optional().or(z.literal('')),
   content: z.string().optional(),
-  image: z.instanceof(File).optional(),
 });
 
 interface SubmitFormProps {
@@ -57,8 +56,6 @@ export default function SubmitForm({ mode = 'real'}: SubmitFormProps) {
   });
 
   const postContent = form.watch('content');
-  const imageFile = form.watch('image');
-  const linkValue = form.watch('link');
 
   const handleSuggestCommunity = async () => {
     if (!postContent || postContent.trim().length < 20) {
@@ -103,9 +100,6 @@ export default function SubmitForm({ mode = 'real'}: SubmitFormProps) {
     formData.append('mode', mode);
     if (values.link) formData.append('link', values.link);
     if (values.content) formData.append('content', values.content);
-    if (values.image) {
-      formData.append('image', values.image);
-    }
     
     try {
       await createPost(formData);
@@ -200,53 +194,19 @@ export default function SubmitForm({ mode = 'real'}: SubmitFormProps) {
             </FormItem>
           )}
         />
-        <div className='flex gap-4 items-end'>
-            <FormField
-            control={form.control}
-            name="link"
-            render={({ field }) => (
-                <FormItem className='flex-1'>
-                <FormLabel>Link (Optional)</FormLabel>
-                <FormControl>
-                    <Input placeholder="https://example.com" {...field} disabled={!!imageFile} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-             <FormField
-                control={form.control}
-                name="image"
-                render={({ field: { onChange, value, ...rest } }) => (
-                <FormItem>
-                    <FormLabel>Image (Optional)</FormLabel>
-                    <FormControl>
-                    <div className="relative">
-                        <Button asChild variant="outline" className="w-full" disabled={!!linkValue}>
-                            <label htmlFor="image-upload" className="cursor-pointer">
-                                <ImageIcon className="mr-2 h-4 w-4" />
-                                {imageFile ? `${imageFile.name.substring(0, 15)}...` : 'Upload Image'}
-                            </label>
-                        </Button>
-                        <Input 
-                            id="image-upload"
-                            type="file"
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            accept="image/png, image/jpeg, image/gif, image/webp"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                onChange(file);
-                            }}
-                            {...rest}
-                            disabled={!!linkValue}
-                        />
-                    </div>
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-        </div>
+        <FormField
+          control={form.control}
+          name="link"
+          render={({ field }) => (
+              <FormItem>
+              <FormLabel>Link (Optional)</FormLabel>
+              <FormControl>
+                  <Input placeholder="https://example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+              </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="content"
@@ -258,10 +218,11 @@ export default function SubmitForm({ mode = 'real'}: SubmitFormProps) {
                   placeholder="Tell us more..."
                   className="min-h-[150px]"
                   {...field}
+                  disabled={!!form.getValues('link')}
                 />
               </FormControl>
               <FormDescription>
-                You can use AI to suggest a community based on your post content.
+                You can use AI to suggest a community based on your post content. Posts with links cannot have text content.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -279,5 +240,3 @@ export default function SubmitForm({ mode = 'real'}: SubmitFormProps) {
     </Form>
   );
 }
-
-    
