@@ -56,12 +56,11 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         mode: posts.mode,
         authorName: users.displayName,
         authorAvatar: users.photoURL,
-        userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
+        userVote: sql`null`.as('user_vote'), // Temporarily disabled
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
       })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
-      .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`))
       .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
       .where(eq(posts.mode, mode))
       .orderBy(desc(posts.createdAt));
@@ -108,13 +107,12 @@ export async function getPostById(postId: number, userId?: string | null) {
     const results = await db.select({
         post: posts,
         user: users,
-        userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
+        userVote: sql`null`.as('user_vote'), // Temporarily disabled
         commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
     })
     .from(posts)
     .where(eq(posts.id, postId))
     .leftJoin(users, eq(posts.userId, users.id))
-    .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`))
     .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId));
 
     
@@ -334,12 +332,11 @@ export async function getPostsByCommunity(communityName: string, mode: 'real' | 
        mode: posts.mode,
        authorName: users.displayName,
        authorAvatar: users.photoURL,
-       userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
+       userVote: sql`null`.as('user_vote'), // Temporarily disabled
        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
      })
      .from(posts)
      .leftJoin(users, eq(posts.userId, users.id))
-     .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`))
      .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId))
      .where(and(eq(posts.mode, mode), eq(posts.community, communityName)))
      .orderBy(desc(posts.createdAt));
