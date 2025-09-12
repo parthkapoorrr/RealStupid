@@ -52,6 +52,7 @@ export default function SubmitForm() {
 
   const postContent = form.watch('content');
   const imageFile = form.watch('image');
+  const linkValue = form.watch('link');
 
   const handleSuggestCommunity = async () => {
     if (!postContent || postContent.trim().length < 20) {
@@ -105,9 +106,9 @@ export default function SubmitForm() {
         title: 'Post Submitted!',
         description: 'Your post has been successfully created.',
       });
-      form.reset();
-      // Force a hard reload to ensure the new post is fetched.
-      window.location.href = '/real';
+      // Redirect to the real feed after successful post creation
+      router.push('/real');
+      router.refresh(); // Refresh to show the new post
     } catch (error) {
       console.error('Failed to create post', error);
       toast({
@@ -193,7 +194,7 @@ export default function SubmitForm() {
             </FormItem>
           )}
         />
-        <div className='flex gap-4'>
+        <div className='flex gap-4 items-end'>
             <FormField
             control={form.control}
             name="link"
@@ -201,7 +202,7 @@ export default function SubmitForm() {
                 <FormItem className='flex-1'>
                 <FormLabel>Link (Optional)</FormLabel>
                 <FormControl>
-                    <Input placeholder="https://example.com" {...field} />
+                    <Input placeholder="https://example.com" {...field} disabled={!!imageFile} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -215,7 +216,7 @@ export default function SubmitForm() {
                     <FormLabel>Image (Optional)</FormLabel>
                     <FormControl>
                     <div className="relative">
-                        <Button asChild variant="outline" className="w-full">
+                        <Button asChild variant="outline" className="w-full" disabled={!!linkValue}>
                             <label htmlFor="image-upload" className="cursor-pointer">
                                 <ImageIcon className="mr-2 h-4 w-4" />
                                 {imageFile ? `${imageFile.name.substring(0, 15)}...` : 'Upload Image'}
@@ -230,7 +231,8 @@ export default function SubmitForm() {
                                 const file = e.target.files?.[0];
                                 onChange(file);
                             }}
-                            {...rest} 
+                            {...rest}
+                            disabled={!!linkValue}
                         />
                     </div>
                     </FormControl>
