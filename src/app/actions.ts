@@ -2,10 +2,9 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { insertPostSchema, posts, users, postVotes, comments } from '@/lib/db/schema';
+import { insertPostSchema, posts, users, postVotes, comments, insertCommentSchema } from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache';
 import { and, desc, eq, sql } from 'drizzle-orm';
-import { auth } from '@/lib/firebase';
 import { getOrCreateUser } from './auth/actions';
 
 export async function createPost(formData: FormData) {
@@ -22,12 +21,10 @@ export async function createPost(formData: FormData) {
   
   // Create a mutable copy for validation
   const valuesToValidate = { ...rawValues };
+  delete (valuesToValidate as any).image; // a temp solution to remove image from validation
 
   if (imageFile && imageFile.size > 0) {
-    // In a real app, you would upload this to a storage service like Firebase Storage or an S3 bucket.
-    // For now, we'll just log that it's here and store a placeholder URL.
     console.log('Image received:', imageFile.name, imageFile.size, 'bytes');
-    // Using picsum for a dynamic placeholder. The seed ensures the same image appears for the same post.
     const seed = Math.floor(Math.random() * 1000);
     // IMPORTANT: Update the link in the object that will be validated
     valuesToValidate.link = `https://picsum.photos/seed/${seed}/800/600`;
@@ -70,7 +67,7 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         authorName: users.displayName,
         authorAvatar: users.photoURL,
         userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
-        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`,
+        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
       })
       .from(posts)
       .leftJoin(users, eq(posts.userId, users.id))
@@ -98,7 +95,7 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
         avatarUrl: p.authorAvatar,
       },
       userVote: p.userVote,
-      commentsCount: Number(p.commentsCount),
+      commentsCount: p.commentsCount,
     }));
   } catch (error) {
     console.error('Database error fetching posts:', error);
@@ -108,23 +105,34 @@ export async function getPosts(mode: 'real' | 'stupid', userId?: string | null) 
 
 export async function getPostById(postId: number, userId?: string | null) {
   try {
+    const commentCountSubquery = db
+    .select({
+      postId: comments.postId,
+      count: sql<number>`count(*)`.as('comment_count'),
+    })
+    .from(comments)
+    .groupBy(comments.postId)
+    .as('comment_counts');
+
     const results = await db.select({
         post: posts,
         user: users,
         userVote: userId ? postVotes.voteType : sql`null`.as('user_vote'),
+        commentsCount: sql<number>`coalesce(${commentCountSubquery.count}, 0)`.mapWith(Number),
     })
     .from(posts)
     .where(eq(posts.id, postId))
     .leftJoin(users, eq(posts.userId, users.id))
-    .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`));
+    .leftJoin(postVotes, and(eq(postVotes.postId, posts.id), userId ? eq(postVotes.userId, userId) : sql`false`))
+    .leftJoin(commentCountSubquery, eq(posts.id, commentCountSubquery.postId));
+
     
     if (results.length === 0 || !results[0].post) {
         return null;
     }
 
-    const { post, user, userVote } = results[0];
+    const { post, user, userVote, commentsCount } = results[0];
 
-    // Remap to match the Post type structure used in components
     return {
       id: String(post.id),
       title: post.title,
@@ -143,7 +151,7 @@ export async function getPostById(postId: number, userId?: string | null) {
       upvotes: post.upvotes,
       downvotes: post.downvotes,
       userVote: userVote,
-      commentsCount: 0, // Placeholder
+      commentsCount: commentsCount,
       mode: post.mode as 'real' | 'stupid',
     };
   } catch (error) {
@@ -169,7 +177,6 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
                     await tx.delete(postVotes).where(
                         and(eq(postVotes.postId, postId), eq(postVotes.userId, userId))
                     );
-                    // Decrement the corresponding vote count
                     const fieldToDecrement = voteType === 'up' ? posts.upvotes : posts.downvotes;
                     await tx.update(posts)
                         .set({ [voteType === 'up' ? 'upvotes' : 'downvotes']: sql`${fieldToDecrement} - 1` })
@@ -181,7 +188,6 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
                         .set({ voteType: voteType })
                         .where(and(eq(postVotes.postId, postId), eq(postVotes.userId, userId)));
                     
-                    // Decrement old vote count, increment new vote count
                     const fieldToDecrement = existingVote.voteType === 'up' ? posts.upvotes : posts.downvotes;
                     const fieldToIncrement = voteType === 'up' ? posts.upvotes : posts.downvotes;
                     await tx.update(posts)
@@ -198,7 +204,6 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
                     userId,
                     voteType,
                 });
-                 // Increment the corresponding vote count
                  const fieldToIncrement = voteType === 'up' ? posts.upvotes : posts.downvotes;
                  await tx.update(posts)
                      .set({ [voteType === 'up' ? 'upvotes' : 'downvotes']: sql`${fieldToIncrement} + 1` })
@@ -206,7 +211,6 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
             }
         });
         
-        // Revalidate paths to update the UI
         revalidatePath('/');
         revalidatePath('/real');
         revalidatePath('/stupid');
@@ -216,4 +220,60 @@ export async function updateVote(postId: number, voteType: 'up' | 'down', userId
         console.error("Failed to update vote", error);
         throw new Error("Could not update vote count.");
     }
+}
+
+export async function createComment(formData: FormData) {
+  const rawValues = {
+    content: formData.get('content') as string,
+    userId: formData.get('userId') as string,
+    postId: Number(formData.get('postId')),
+  };
+
+  const validatedComment = insertCommentSchema.parse(rawValues);
+
+  try {
+    await db.insert(comments).values(validatedComment);
+    revalidatePath(`/post/${rawValues.postId}`);
+  } catch (error) {
+    console.error('Database error creating comment:', error);
+    throw new Error('Failed to save comment to the database.');
+  }
+}
+
+export async function getComments(postId: number) {
+  try {
+    const allComments = await db
+      .select({
+        id: comments.id,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        authorName: users.displayName,
+        authorAvatar: users.photoURL,
+        postId: comments.postId,
+      })
+      .from(comments)
+      .leftJoin(users, eq(comments.userId, users.id))
+      .where(eq(comments.postId, postId))
+      .orderBy(desc(comments.createdAt));
+
+    return allComments.map(c => ({
+      id: String(c.id),
+      content: c.content,
+      createdAt: new Date(c.createdAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      author: {
+        name: c.authorName || 'Unknown User',
+        avatarUrl: c.authorAvatar || undefined,
+      },
+      postId: String(c.postId),
+      upvotes: 0, // Not implemented
+      downvotes: 0, // Not implemented
+    }));
+  } catch (error) {
+    console.error('Database error fetching comments:', error);
+    return [];
+  }
 }

@@ -1,6 +1,6 @@
 
+
 import CommentSection from '@/components/CommentSection';
-import { mockComments } from '@/data/mock-data';
 import type { Post, Comment } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import VoteButtons from '@/components/VoteButtons';
@@ -8,7 +8,7 @@ import { MessageSquare, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
-import { getPostById } from '@/app/actions';
+import { getPostById, getComments } from '@/app/actions';
 import { getOrCreateUser } from '@/app/auth/actions';
 import { auth } from '@/lib/firebase';
 
@@ -27,8 +27,10 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     user = await getOrCreateUser(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoURL);
   }
 
-  let post: Post | null = await getPostById(postIdNum, user?.id);
-  const comments: Comment[] = mockComments[post?.id.replace('stupid-', '') || ''] || [];
+  const postPromise = getPostById(postIdNum, user?.id);
+  const commentsPromise = getComments(postIdNum);
+
+  const [post, comments] = await Promise.all([postPromise, commentsPromise]);
 
   if (!post) {
     notFound();
@@ -56,12 +58,9 @@ export default async function PostPage({ params }: { params: { id: string } }) {
         }
     }
     
-    post = {
-      ...post,
-      id: `stupid-${post.id}`,
-      community: `stupid/${post.community}`,
-      author: stupidAuthor,
-    }
+    post.id = `stupid-${post.id}`;
+    post.community = `stupid/${post.community}`;
+    post.author = stupidAuthor;
   }
 
   const isImagePost = post.link && (post.link.startsWith('https://picsum.photos') || /\.(jpg|jpeg|png|webp|avif|gif)$/.test(post.link));
@@ -122,7 +121,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
       </Card>
 
       <div className="mt-8">
-        <CommentSection postId={post.id} initialComments={comments} />
+        <CommentSection postId={postId} initialComments={comments as Comment[]} />
       </div>
     </div>
   );
